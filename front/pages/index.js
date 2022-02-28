@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import axios from 'axios';
 import { END } from 'redux-saga';
 import { Col, Row } from 'antd';
-import AppLayout from '../components/AppLayout';
+import AppLayout from '../components/AppLayout/AppLayout';
 import PostForm from '../components/PostForm';
 import PostCard from '../components/PostCard';
 import { LOAD_POST_REQUEST } from '../reducers/post';

@@ -2,100 +2,23 @@ import Link from 'next/link';
 import PropTypes from 'prop-types';
 import React, { useCallback } from 'react';
 import { Menu, Input, Row, Col, Button } from 'antd';
+import {LeftSidebar, Navbar, RightSidebar, SearchInput, SidebarDiv, SidebarImg, SidebarLi, SidebarUl} from './styles';
 import 'antd/dist/antd.css';
-import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import Router from 'next/router';
 
-import useInput from '../hooks/useInput';
-import icon1 from '../public/favicon.png';
-import icon2 from '../public/home2.png';
-import icon3 from '../public/search.png';
-import icon4 from '../public/bookmark.png';
-import icon5 from '../public/clipboard.png';
-import icon6 from '../public/user.png';
-import icon7 from '../public/bell.png';
-import icon8 from '../public/email.png';
-import icon9 from '../public/more.png';
-import icon10 from '../public/logout.png';
-import { logoutRequestAction } from '../reducers/user';
-
-const SidebarImg = styled.img`
-  width: 40px;
-  role: presantation;
-`;
-
-const SidebarUl = styled.ul`
-  list-style-type: none;
-  line-height: 1;
-  color:black;
-`;
-
-const SidebarLi = styled.li`
-  cursor: pointer;
-  transition: all 0.25s ease;
-  line-height: 70px;
-  :hover {
-    transform: scale(1.3, 1.3);
-  }
-  color:black;
-`;
-
-const SidebarDiv = styled.div`
-  left: 0px;
-  border-radius: 2rem;
-  color: black;
-  width: 300px;
-  height: 1500px;
-  font-weight: bold;
-  line-height: 250%;
-`;
-
-const LeftSidebar = styled.div` 
-  position: fixed;
-  float: left;
-  top: 0px;
-  left: 10%;
-  width: 200px;
-  height: 1000px;
-  background: #f3f5fa15;
-  padding: 0px 0;
-  overflow: hidden;
-  color: black;
-  font-size: 20px;
-  z-index: 10;
-`;
-
-const Navbar = styled.div` 
-  position: fixed;
-  float: left;
-  top: 0px;
-  left: 29%;
-  width: 1800px;
-  background: #f3f5fa15;
-  padding: 0px 0;
-  overflow: hidden;
-  color: black;
-  font-size: 20px;
-  z-index: 10;
-`;
-
-const RightSidebar = styled.div` 
-  position: fixed;
-  float: left;
-  top: 10px;
-  right: 200px;
-  background: #f3f5fa15;
-  padding: 0px 0;
-  overflow: hidden;
-  color: black;
-  font-size: 20px;
-  z-index: 10;
-`;
-
-const SearchInput = styled(Input.Search)`
-  vertical-align: middle;
-`;
+import useInput from '../../hooks/useInput';
+import icon1 from '../../public/favicon.png';
+import icon2 from '../../public/home2.png';
+import icon3 from '../../public/search.png';
+import icon4 from '../../public/bookmark.png';
+import icon5 from '../../public/clipboard.png';
+import icon6 from '../../public/user.png';
+import icon7 from '../../public/bell.png';
+import icon8 from '../../public/email.png';
+import icon9 from '../../public/more.png';
+import icon10 from '../../public/logout.png';
+import { logoutRequestAction } from '../../reducers/user';
 
 function AppLayout({ children }) {
   const [searchInput, onChangeSearchInput] = useInput('');
