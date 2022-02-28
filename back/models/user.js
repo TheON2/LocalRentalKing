@@ -26,10 +26,10 @@ module.exports=(sequelize,DataTypes)=>{
             type:DataTypes.STRING(20),
             allowNull:false,//
         },
-        joinDate:{//가입일,데이터 하는거 있지 않을까?자동으로 등록?
-            type:DataTypes.STRING(20),
-            allowNull:false,//
-        },
+        // joinDate:{//가입일,데이터 하는거 있지 않을까?자동으로 등록?
+        //     type:DataTypes.STRING(20),
+        //     allowNull:false,//
+        // },알아서 생긴다 
         profileImgSrc:{
             type:DataTypes.STRING(100),
             allowNull:true,//
