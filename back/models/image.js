@@ -19,6 +19,7 @@ module.exports=class Image extends Sequelize.Model{
         );
     }
     static associate(db){
+        db.Image.belongsTo(db.Post);//이미지는 게시물에 종속되고 postID를 외래키로 가져올거임
         
     }
 }

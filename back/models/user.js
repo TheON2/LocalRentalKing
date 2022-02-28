@@ -48,6 +48,9 @@ module.exports=class User extends Sequelize.Model{
         );
     }
     static associate(db){
-        
+        db.User.hasMany(db.Post);
+        db.User.hasMany(db.Comment);
+        db.User.belongsToMany(db.Post,{through:'Like'});//유저가 여러개의 게시글에 좋아요를 누를 수 있다.
+       // db.User.belongsToMany(db.User,{through:''});
     }
 }

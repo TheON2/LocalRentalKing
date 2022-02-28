@@ -36,6 +36,9 @@ module.exports=class Post extends Sequelize.Model{
         );
     }
     static associate(db){
-        
+        db.Post.hasMany(db.Image);//게시물은 많은 이미지를 가질 수 있다.
+        db.Post.hasMany(db.Comment);//게시글은 많은 댓글을 가질 수 있다.
+        db.Post.belongsTo(db.User);//게시글은 유저에게 포함된다.->유저가 게시글을 많들었다.
+        db.Post.belongsToMany(db.User,{through:'Like'});//포스트는 여러 사람으로부터 좋아요를 받을 수 있다.
     }
 }
