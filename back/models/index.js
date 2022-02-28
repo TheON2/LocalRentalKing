@@ -1,3 +1,4 @@
+
 const Sequelize = require('sequelize');
 const comment = require('./comment');
 const hashtag = require('./hashtag');
@@ -31,3 +32,4 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 module.exports = db;
+
