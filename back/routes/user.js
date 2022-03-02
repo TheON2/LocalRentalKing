@@ -9,6 +9,7 @@ const { User } = require("../models"); //모델스에 만들어놓은 유저를 
 const router = express.Router();
 
 router.post("/login", (req, res, next) => {
+  //로그인
   passport.authenticate("local", (err, user, info) => {
     if (err) {
       crossOriginIsolated.error(err);
@@ -27,11 +28,16 @@ router.post("/login", (req, res, next) => {
   })(req, res, next);
 }); //전략이 실행됨
 
-router.post("/login", (req, res, next) => {
-  //POST/user/login
-}); //로그인하는거는 그냥 포스트로
+router.post("/user/logout", (req, res) => {
+  //로그아웃
+  console.log(req.user);
+  req.logout();
+  req.session.destroy();
+  res.send("ok");
+});
 
 router.post("/", async (req, res) => {
+  //회원가입
   //'/'랑 앱js에 있는 app.use('/user',....)->POST/user/ 사가에서 axios.post('http://localhost:3065/user/')
   try {
     const exUser = await User.findOne({
@@ -62,7 +68,7 @@ router.post("/", async (req, res) => {
     next(error);
   }
 });
-
+//========================테스트===========================================================
 router.get("/findAll", (req, res) => {
   //테스트용
   //axios.get('http://localhost:3065/user/findAll')

@@ -1,6 +1,9 @@
 const express = require("express");
-const userRouter = require("./routes/user");
 const db = require("./models");
+
+const userRouter = require("./routes/user");
+const postRouter = require("./routes/post");
+const postsRouter = require("./routes/posts");
 
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
@@ -45,7 +48,7 @@ app.use("/", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cookieParser());
+app.use(cookieParser(process.env.COOKIE_SECRET)); //쿠ㅠ키파서 안에 추가했음
 app.use(
   session({
     saveUninitialized: false,
@@ -56,6 +59,9 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use("/post", postRouter);
+app.use("/posts", postsRouter);
 app.use("/user", userRouter);
 
 app.listen(3065, () => {
