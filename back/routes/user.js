@@ -1,11 +1,35 @@
 const express = require("express");
 const bcrypt = require("bcrypt"); //암호화 위한 모듈
+const passport = require("passport");
 const { User } = require("../models"); //모델스에 만들어놓은 유저를 쓰겠음 인덱스에서db로 익스포트 했으니까
-const { format } = require("sequelize/types/utils");
+//const { format } = require("sequelize/types/utils");
 //원래 db.User로 접근해야 하는데 {User}해놓으면 그냥 유저로 접근 간으
 //const db=require('../models');이렇게 해놨으면 db.User로 접근
 
 const router = express.Router();
+
+router.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      crossOriginIsolated.error(err);
+      return next(err);
+    }
+    if (info) {
+      return res.status(401).send(info.reason);
+    }
+    return req.login(user, async (loginErr) => {
+      if (loginErr) {
+        console.error(loginErr);
+        return next(loginErr);
+      }
+      return res.status(200).json(user); //사용자 정보를 프론트로 넘겨줌
+    });
+  })(req, res, next);
+}); //전략이 실행됨
+
+router.post("/login", (req, res, next) => {
+  //POST/user/login
+}); //로그인하는거는 그냥 포스트로
 
 router.post("/", async (req, res) => {
   //'/'랑 앱js에 있는 app.use('/user',....)->POST/user/ 사가에서 axios.post('http://localhost:3065/user/')
@@ -40,6 +64,7 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/findAll", (req, res) => {
+  //테스트용
   //axios.get('http://localhost:3065/user/findAll')
   User.findAll().then((result) => {
     console.log(result);
@@ -49,6 +74,7 @@ router.get("/findAll", (req, res) => {
 });
 
 router.get("/findOne", (req, res) => {
+  //테스트용
   //axios.get('http://localhost:3065/user/findOne')
   User.findAll({
     where: {
