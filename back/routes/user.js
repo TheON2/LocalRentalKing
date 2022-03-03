@@ -5,6 +5,7 @@ const { User } = require("../models"); //모델스에 만들어놓은 유저를 
 //const { format } = require("sequelize/types/utils");
 //원래 db.User로 접근해야 하는데 {User}해놓으면 그냥 유저로 접근 간으
 //const db=require('../models');이렇게 해놨으면 db.User로 접근
+const { isLoggedIn } = require("./middlewares");
 
 const router = express.Router();
 
@@ -28,12 +29,31 @@ router.post("/login", (req, res, next) => {
   })(req, res, next);
 }); //전략이 실행됨
 
-router.post("/user/logout", (req, res) => {
+router.post("/logout", isLoggedIn, (req, res) => {
+  //"/user/logout"
   //로그아웃
   console.log(req.user);
   req.logout();
   req.session.destroy();
   res.send("ok");
+});
+
+router.patch("/nickname", isLoggedIn, async (req, res, next) => {
+  //닉네임 수정
+  try {
+    await User.update(
+      {
+        nickname: req.body.nickname, //프론트에서 받아온 닉네임으로 디비에 저장되어있는 닉네임이랑 바꿈
+      },
+      {
+        where: { id: req.user.id }, //user의 id와 나의 id가 일치해야지 바꿀수있음
+      }
+    );
+    res.status(200).json({ nickname: req.body.nickname });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
 });
 
 router.post("/", async (req, res) => {
