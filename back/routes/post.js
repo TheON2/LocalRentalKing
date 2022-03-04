@@ -1,9 +1,38 @@
 const express = require("express");
-const router = express.Router();
+const multer = require("multer"); //라우터에 장착하는게 대부분임
+const path = require("path"); //파일의 확장자를 꺼내올 수 있음
+const fs = require("fs"); //파일 시스템을 조작하는
 const { Post } = require("../models");
 const { isLoggedIn } = require("./middlewares"); //로그인된 사람인지 확인
 
-router.post("/", isLoggedIn, async (req, res, next) => {
+const router = express.Router();
+
+//=======이미지 업로드 폴더 uploads를 만듬 이미 존재한다면 안만듬=======
+try {
+  fs.accessSync("uploads");
+} catch (error) {
+  console.log("uploads폴더가 없으므로 생성합니다");
+  fs.mkdirSync("uploads");
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, done) {
+      done(null, "upload");
+    },
+    filename(req, file, done) {
+      //백종훈.jpg
+      const ext = path.extname(file.originalname); //확장자 추출(png)
+      const basename = path.basename(file.originalname, ext);
+      done(null, basename + "_" + new Date().getTime() + ext); //백종훈15185218958129.png
+      //다른 사람의 이미지를 덮어 씌우는것을 방지하기 위한 코드
+    },
+  }),
+  limits: { fileSize: 20 * 1024 * 1024 }, //20MB로 제한
+});
+
+//------------------게시글 생성-----------------------------------------------
+router.post("/", isLoggedIn, upload.none(), async (req, res, next) => {
   //포스트 생성
   //미들웨어 확장?
   //POST/post
@@ -17,6 +46,17 @@ router.post("/", isLoggedIn, async (req, res, next) => {
       hashtag: req.body.hashtag,
       UserId: req.user.id,
     });
+    if (req.body.image) {
+      if (Array.isArray(req.body.image)) {
+        const images = await Promise.all(
+          req.body.image.map((image) => Image.create({ src: image }))
+        );
+        await post.addImages(images); //???????????????
+      } else {
+        const image = await Image.create({ src: req.body.image });
+        await post.addImages(image); //????????????????????????????????
+      }
+    }
     res.status(201).json(post); //생성되면 그걸 제이슨으로 res에 보내줌
   } catch (error) {
     console.error(error);
@@ -24,8 +64,19 @@ router.post("/", isLoggedIn, async (req, res, next) => {
   }
 });
 
+//==========================이미지 업로드===============================
+router.post(
+  "/images",
+  isLoggedIn,
+  upload.array("image"),
+  async (req, res, next) => {
+    console.log(req.files); //업로드가 어떻게 되었는지 정보
+    res.json(req.files.map((v) => v.filename)); //어디로 업로드가 되었는지 파일명을 프론트로 넘겨줌
+  }
+);
+
+//----------------게시글 디테일하게 가져오기------------------------------------------------
 router.post("/:postId/postDetail", async (req, res, next) => {
-  //포스트 눌렀을때 가져오기
   //POST/post/postDetail
   try {
     const postOne = await Post.findOne({
@@ -63,10 +114,9 @@ router.post("/:postId/postDetail", async (req, res, next) => {
   }
 });
 
+//----------------------게시글에 댓글 달기---------------------------------------
 router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
-  //게시글의 댓글 다는..
   //POST/post/1/comment
-  //POST/post
   try {
     const post = await Post.findOne({
       where: { id: req.params.postId },
@@ -86,6 +136,7 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
   }
 });
 
+//-----------------------게시글 좋아요 누르기------------------------------
 router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
   //PATCH /post/1/like
   //patch는 부분수정/좋아요 누르면 ...
@@ -105,6 +156,7 @@ router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
   }
 });
 
+//---------------게시글 좋아요 누른거 취소하기-----------------------------------
 router.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
   //DELETE /post/1/like
   //patch는 부분수정/좋아요 누르면 ...
@@ -123,6 +175,7 @@ router.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
   }
 });
 
+//----------------------게시글 삭제하기-------------------------------
 router.delete("/:postId", isLoggedIn, async (req, res, next) => {
   //DELETE /post/10
 

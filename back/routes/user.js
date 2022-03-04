@@ -9,8 +9,8 @@ const { isLoggedIn } = require("./middlewares");
 
 const router = express.Router();
 
+//--------------------로그인------------------------------------
 router.post("/login", (req, res, next) => {
-  //로그인
   passport.authenticate("local", (err, user, info) => {
     if (err) {
       crossOriginIsolated.error(err);
@@ -29,6 +29,7 @@ router.post("/login", (req, res, next) => {
   })(req, res, next);
 }); //전략이 실행됨
 
+//-------------------로그아웃-------------------------------------
 router.post("/logout", isLoggedIn, (req, res) => {
   //"/user/logout"
   //로그아웃
@@ -38,6 +39,7 @@ router.post("/logout", isLoggedIn, (req, res) => {
   res.send("ok");
 });
 
+//-----------------------닉네임 수정------------------------------
 router.patch("/nickname", isLoggedIn, async (req, res, next) => {
   //닉네임 수정
   try {
@@ -56,6 +58,7 @@ router.patch("/nickname", isLoggedIn, async (req, res, next) => {
   }
 });
 
+//=====================회원가입==================================
 router.post("/", async (req, res) => {
   //회원가입
   //'/'랑 앱js에 있는 app.use('/user',....)->POST/user/ 사가에서 axios.post('http://localhost:3065/user/')
@@ -88,7 +91,8 @@ router.post("/", async (req, res) => {
     next(error);
   }
 });
-//========================테스트===========================================================
+
+//========================테스트용===========================================================
 router.get("/findAll", (req, res) => {
   //테스트용
   //axios.get('http://localhost:3065/user/findAll')
