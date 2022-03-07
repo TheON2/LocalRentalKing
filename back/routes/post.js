@@ -2,7 +2,16 @@ const express = require("express");
 const multer = require("multer"); //라우터에 장착하는게 대부분임
 const path = require("path"); //파일의 확장자를 꺼내올 수 있음
 const fs = require("fs"); //파일 시스템을 조작하는
-const { Post } = require("../models");
+const {
+  ProdPost,
+  PowerPost,
+  TogetherPost,
+  Post,
+  Image,
+  Comment,
+  User,
+} = require("../models");
+
 const { isLoggedIn } = require("./middlewares"); //로그인된 사람인지 확인
 
 const router = express.Router();
@@ -31,36 +40,107 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 }, //20MB로 제한
 });
 
-//------------------게시글 생성-----------------------------------------------
-router.post("/", isLoggedIn, upload.none(), async (req, res, next) => {
-  //포스트 생성
-  //미들웨어 확장?
-  //POST/post
-  try {
-    const post = await Post.create({
-      content: req.body.content,
-      title: req.body.title,
-      price: req.body.price,
-      whatCummunity: req.body.whatCummunity,
-      Category: req.body.Category,
-      hashtag: req.body.hashtag,
-      UserId: req.user.id,
-    });
-    if (req.body.image) {
-      if (Array.isArray(req.body.image)) {
-        const images = await Promise.all(
-          req.body.image.map((image) => Image.create({ src: image }))
-        );
-        await post.addImages(images); //???????????????
-      } else {
-        const image = await Image.create({ src: req.body.image });
-        await post.addImages(image); //????????????????????????????????
+//------------------게시글 생성 물건빌려줘빌려줄게....-----------------------------------------------
+router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
+  // POST / post
+  const boardNum = req.body.boardNum;
+  if (boardNum == 1 || boardNum == 2) {
+    //1:물건빌려줘, 2:물건 빌려줄게
+    try {
+      const prodPost = await ProdPost.create({
+        boardNum: boardNum,
+        category: req.body.category, // 공구, 의류, 전자기기, 서적 등등 //
+        title: req.body.title,
+        content: req.body.content,
+        price: req.body.price,
+        UserId: req.body.userid,
+        user_nickname: req.body.nickname,
+        user_location: req.body.location,
+      });
+      if (req.body.image) {
+        if (Array.isArray(req.body.image)) {
+          //이미지가 여러개올라오면 image:[사진1.png, 사진2.png]  ~배열
+          const images = await Promise.all(
+            req.body.image.map((image) => ProdPostImage.create({ src: image })) //프로미스배열
+          );
+          await prodPost.addProdPostImages(images);
+        } else {
+          //이미지가 하나만 올라오면 image : 사진.png
+          const image = await ProdPostImage.create({ src: req.body.image });
+          await prodPost.addProdPostImages(image);
+        }
       }
+
+      res.status(201).json(prodPost); //프론트로 돌려줌
+    } catch (error) {
+      console.error(error);
+      next(error);
     }
-    res.status(201).json(post); //생성되면 그걸 제이슨으로 res에 보내줌
-  } catch (error) {
-    console.error(error);
-    next(error);
+  } else if (boardNum == 3 || boardNum == 4) {
+    //3:힘을빌려줘, 4:힘을 빌려줄게
+    try {
+      const powerPost = await PowerPost.create({
+        boardNum: boardNum,
+        category: req.body.category, //
+        title: req.body.title,
+        content: req.body.content,
+        price: req.body.price,
+        UserId: req.body.userid,
+        user_nickname: req.body.nickname,
+        user_location: req.body.location,
+      });
+      if (req.body.image) {
+        if (Array.isArray(req.body.image)) {
+          //이미지 여러개
+          const images = await Promise.all(
+            req.body.image.map((image) => PowerPostImage.create({ src: image }))
+          );
+          await powerPost.addPowerPostImages(images);
+        } else {
+          //이미지 하나
+          const image = await PowerPostImage.create({ src: req.body.image });
+          await powerPost.addPowerPostImages(image);
+        }
+      }
+      res.status(201).json(powerPost);
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  } else if (boardNum == 5) {
+    //5:같이하자
+    try {
+      const togetherPost = await TogetherPost.create({
+        boardNum: boardNum,
+        category: req.body.category, //
+        title: req.body.title,
+        content: req.body.content,
+        originalPrice: req.body.originalPrice,
+        sharedPrice: req.body.sharedPrice,
+        UserId: req.body.userid,
+        user_nickname: req.body.nickname,
+        user_location: req.body.location,
+      });
+      if (req.body.image) {
+        if (Array.isArray(req.body.image)) {
+          //이미지 여러개
+          const images = await Promise.all(
+            req.body.image.map((image) =>
+              TogetherPostImage.create({ src: image })
+            )
+          );
+          await togetherPost.addTogetherPosTImages(images);
+        } else {
+          //이미지 하나
+          const image = await TogetherPostImage.create({ src: req.body.image });
+          await togetherPost.addPTogetherPostImages(image);
+        }
+      }
+      res.status(201).json(togetherPost);
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
   }
 });
 
@@ -75,7 +155,7 @@ router.post(
   }
 );
 
-//----------------게시글 디테일하게 가져오기------------------------------------------------
+//==========================게시글 디테일하게 가져오기===================================
 router.post("/:postId/postDetail", async (req, res, next) => {
   //POST/post/postDetail
   try {

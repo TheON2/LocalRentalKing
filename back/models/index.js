@@ -1,8 +1,18 @@
 const Sequelize = require("sequelize");
-const comment = require("./comment");
-const image = require("./image");
-const post = require("./post");
+const prodPostComment = require("./prodPostComment");
+const powerPostComment = require("./powerPostComment");
+const togetherPostComment = require("./togetherPostComment");
+// const prodPost = require("./prodPost");
+// const powerPost = require("./powerPost");
+// const togetherPost = require("./togetherPost");
 const user = require("./user");
+const prodPost = require("./prodPost");
+const powerPost = require("./powerPost");
+const togetherPost = require("./togetherPost");
+const prodPostImage = require("./prodPostImage");
+const powerPostImage = require("./powerPostImage");
+const togetherPostImage = require("./togetherPostImage");
+//const community4 = require("./powerPostImage");
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
@@ -15,10 +25,25 @@ const sequelize = new Sequelize(
   config
 );
 
-db.Comment = comment;
-db.Image = image;
-db.Post = post;
+db.ProdPostComment = prodPostComment;
+db.PowerPostComment = powerPostComment;
+db.TogetherPostComment = togetherPostComment;
+
+db.ProdPostImage = prodPostImage;
+db.PowerPostImage = powerPostImage;
+db.TogetherPostImage = togetherPostImage;
+
+// db.ProdPost = prodPost;
+// db.PowerPost = powerPost;
+//db.TogetherPostImage = togetherPostImage;
+
 db.User = user;
+
+db.ProdPost = prodPost;
+db.PowerPost = powerPost;
+db.TogetherPost = togetherPost;
+
+//db.Community4 = community4;
 
 Object.keys(db).forEach((modelName) => {
   db[modelName].init(sequelize);

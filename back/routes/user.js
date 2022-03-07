@@ -77,12 +77,12 @@ router.post("/", async (req, res) => {
     await User.create({
       //크리에이트는 비동기 메소드? 기 때문에 어웨이트 어싱크 해줘야함
       email: req.body.email,
-      nickname: req.body.nickname,
       password: hashedPassword,
+      nickname: req.body.nickname,
       location: req.body.location,
-      greeting: req.body.greeting,
-      grade: req.body.grade,
-      profileImgSrc: req.body.profileImgSrc,
+      // greeting: req.body.greeting,
+      // grade: req.body.grade,
+      // profileImgSrc: req.body.profileImgSrc,
     });
     res.status(200).send("ok");
     //res.json(); //제이슨으로 보내줌
