@@ -1,5 +1,5 @@
-import styled from 'styled-components';
-import {Input} from "antd";
+import styled, { createGlobalStyle } from 'styled-components';
+import {Button, Input} from "antd";
 
 export const SidebarImg = styled.img`
   width: 40px;
@@ -10,7 +10,7 @@ export const SidebarUl = styled.ul`
   list-style-type: none;
   line-height: 1;
   color:black;
-`;
+  `;
 
 export const SidebarLi = styled.li`
   cursor: pointer;
@@ -20,16 +20,17 @@ export const SidebarLi = styled.li`
     transform: scale(1.3, 1.3);
   }
   color:black;
+  margin-right:40%;
 `;
 
 export const SidebarDiv = styled.div`
   left: 0px;
-  border-radius: 2rem;
   color: black;
   width: 300px;
-  height: 1500px;
+  height: auto;
   font-weight: bold;
   line-height: 250%;
+  background: #3598db !important;
 `;
 
 export const LeftSidebar = styled.div`
@@ -37,9 +38,9 @@ export const LeftSidebar = styled.div`
   float: left;
   top: 0px;
   left: 10%;
-  width: 200px;
-  height: 1000px;
-  background: #f3f5fa15;
+  width: 15%;
+  height: auto;
+  background: #3598db !important;
   padding: 0px 0;
   overflow: hidden;
   color: black;
@@ -51,29 +52,35 @@ export const Navbar = styled.div`
   position: fixed;
   float: left;
   top: 0px;
-  left: 29%;
-  width: 1800px;
-  background: #f3f5fa15;
-  padding: 0px 0;
+  left: 25%;
+  width: 65%;
+  height:8%;
+  background: #3598db !important;
   overflow: hidden;
-  color: black;
-  font-size: 20px;
   z-index: 10;
+  display:flex;
 `;
 
 export const RightSidebar = styled.div`
   position: fixed;
-  float: left;
-  top: 10px;
-  right: 200px;
-  background: #f3f5fa15;
-  padding: 0px 0;
+  top:1%;
+  left:40%;
+  padding: 0 auto;
   overflow: hidden;
   color: black;
   font-size: 20px;
   z-index: 10;
+  padding-right:500px;
 `;
 
 export const SearchInput = styled(Input.Search)`
-  vertical-align: middle;
+  padding-top:20px;
+  width:50%;
+  float:left;
 `;
+
+// export const SearchInput = styled(Input.span)`
+//   background:#f0f0f0;
+// `;
+
+
