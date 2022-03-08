@@ -223,6 +223,25 @@ router.patch("/nickname", isLoggedIn, async (req, res, next) => {
   }
 });
 
+//-----------------------유저의 소개글 수정------------------------------
+router.patch("/greeting", isLoggedIn, async (req, res, next) => {
+  //닉네임 수정
+  try {
+    await User.update(
+      {
+        greeting: req.body.greeting, //프론트에서 받아온 닉네임으로 디비에 저장되어있는 닉네임이랑 바꿈
+      },
+      {
+        where: { id: req.user.id }, //user의 id와 나의 id가 일치해야지 바꿀수있음
+      }
+    );
+    res.status(200).json({ greeting: req.body.greeting });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 //-----------------------유저의 로케이션 수정------------------------------
 router.patch("/location", isLoggedIn, async (req, res, next) => {
   //닉네임 수정
@@ -242,7 +261,7 @@ router.patch("/location", isLoggedIn, async (req, res, next) => {
   }
 });
 
-//-----------------------유저의 패스워드 수정 아직안했음------------------------------
+//-----------------------유저의 패스워드 수정------------------------------
 router.patch("/password", isLoggedIn, async (req, res, next) => {
   //닉네임 수정
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
