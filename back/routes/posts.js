@@ -15,14 +15,15 @@ const {
 
 const router = express.Router();
 //====================게시글 10개 보여주기==================================
-router.get("/get10", async (req, res, next) => {
+// router.get("/get10", async (req, res, next) => {
+router.get("/:tagData/post", async (req, res, next) => {
   //게시판 처음 들어가면 10개 보여줌 작성자/ 컨텐츠 /이미지도 보여줌
   try {
     const where = {}; //초기에 조건없음
     if (parseInt(req.query.lastId, 10)) {
       //라스트 아이디가 0이 아니라면
 
-      if (req.tagData != null) {
+      if (req.params.tagData != null) {
         //태그 데이터가 널이 아니라면->오른쪽 태그 눌렀음
         (where.user_location = {
           //유저 위치
@@ -30,7 +31,7 @@ router.get("/get10", async (req, res, next) => {
         }),
           (where.boardNum = {
             //보드넘버
-            [Op.eq]: req.body.boardNum,
+            [Op.eq]: req.query.boardNum,
           }),
           (where.id = {
             //라스트아이디
@@ -38,7 +39,7 @@ router.get("/get10", async (req, res, next) => {
           }),
           (where.category = {
             //왼쪽탭
-            [Op.eq]: req.body.tagData,
+            [Op.eq]: req.params.tagData,
           }),
           console.log(where); //다합쳐진 where완성
       } else {
@@ -46,6 +47,10 @@ router.get("/get10", async (req, res, next) => {
         (where.user_location = {
           [Op.eq]: req.body.location,
         }),
+          (where.boardNum = {
+            //보드넘버
+            [Op.eq]: req.query.boardNum,
+          }),
           (where.id = {
             [Op.lt]: parseInt(req.query.lastId, 10),
           }),

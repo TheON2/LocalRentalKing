@@ -39,10 +39,21 @@ router.post("/logout", isLoggedIn, (req, res) => {
   res.send("ok");
 });
 
-//-----------------------닉네임 수정------------------------------
+//-----------------------유저의 닉네임 수정------------------------------
 router.patch("/nickname", isLoggedIn, async (req, res, next) => {
   //닉네임 수정
   try {
+    //const nickname2=req.body.nickname;
+    const exNick = await User.findOne({
+      //들어온 닉네임이 중복인지 확인
+      where: {
+        nickname: req.body.nickname,
+      },
+    });
+    if (exNick) {
+      //엑스Nick 있다면 이미 사용중인 닉네임이라는
+      return res.status(403).send("이미 사용중인 닉네임 입니다");
+    }
     await User.update(
       {
         nickname: req.body.nickname, //프론트에서 받아온 닉네임으로 디비에 저장되어있는 닉네임이랑 바꿈
@@ -52,6 +63,73 @@ router.patch("/nickname", isLoggedIn, async (req, res, next) => {
       }
     );
     res.status(200).json({ nickname: req.body.nickname });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+//-----------------------유저의 패스워드 수정------------------------------
+router.patch("/password", isLoggedIn, async (req, res, next) => {
+  //닉네임 수정
+  try {
+    const exNick = await User.findOne({
+      //들어온 닉네임이 중복인지 확인
+      where: {
+        nickname: req.body.nickname,
+      },
+    });
+    if (exNick) {
+      //엑스Nick 있다면 이미 사용중인 닉네임이라는
+      return res.status(403).send("이미 사용중인 닉네임 입니다");
+    }
+    await User.update(
+      {
+        nickname: req.body.nickname, //프론트에서 받아온 닉네임으로 디비에 저장되어있는 닉네임이랑 바꿈
+      },
+      {
+        where: { id: req.user.id }, //user의 id와 나의 id가 일치해야지 바꿀수있음
+      }
+    );
+    res.status(200).json({ nickname: req.body.nickname });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+//-----------------------유저의 로케이션 수정------------------------------
+router.patch("/location", isLoggedIn, async (req, res, next) => {
+  //닉네임 수정
+  try {
+    await User.update(
+      {
+        location: req.body.location, //프론트에서 받아온 닉네임으로 디비에 저장되어있는 닉네임이랑 바꿈
+      },
+      {
+        where: { id: req.user.id }, //user의 id와 나의 id가 일치해야지 바꿀수있음
+      }
+    );
+    res.status(200).json({ location: req.body.location });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+//-----------------------유저의 프로필 이미지 수정------------------------------
+router.patch("/location", isLoggedIn, async (req, res, next) => {
+  //닉네임 수정
+  try {
+    await User.update(
+      {
+        location: req.body.location, //프론트에서 받아온 닉네임으로 디비에 저장되어있는 닉네임이랑 바꿈
+      },
+      {
+        where: { id: req.user.id }, //user의 id와 나의 id가 일치해야지 바꿀수있음
+      }
+    );
+    res.status(200).json({ location: req.body.location });
   } catch (error) {
     console.error(error);
     next(error);
