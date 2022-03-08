@@ -175,6 +175,23 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+//======================  모든 유저 불러오기   -===========================
+router.get("/alluser", async (req, res, next) => {
+  //관리자만 사용 가능??? 이프에서 관리자 걸러서 사용하는걸로...
+  // GET / user
+  try {
+    if (req.user) {
+      const user = await User.findAll({});
+      res.status(200).json(user);
+    } else {
+      res.status(200).json(null);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 // //        <----- 유저 정보 수정 (어떤데이터를 수정해야할지 협의 필요)----->
 // router.patch("/update", isLoggedIn, async (req, res, next) => {
 //   try {
