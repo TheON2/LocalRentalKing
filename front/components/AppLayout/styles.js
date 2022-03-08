@@ -30,16 +30,17 @@ export const SidebarDiv = styled.div`
   height: 1500px;
   font-weight: bold;
   line-height: 250%;
+  background: skyblue !important;
 `;
 
 export const LeftSidebar = styled.div`
   position: fixed;
   float: left;
   top: 0px;
-  left: 10%;
-  width: 200px;
+  left: 9%;
+  width: 220px;
   height: 1000px;
-  background: #f3f5fa15;
+  background: skyblue !important;
   padding: 0px 0;
   overflow: hidden;
   color: black;
@@ -53,7 +54,7 @@ export const Navbar = styled.div`
   top: 0px;
   left: 29%;
   width: 1800px;
-  background: #f3f5fa15;
+  background: skyblue !important;
   padding: 0px 0;
   overflow: hidden;
   color: black;
@@ -63,10 +64,8 @@ export const Navbar = styled.div`
 
 export const RightSidebar = styled.div`
   position: fixed;
-  float: left;
-  top: 10px;
-  right: 200px;
-  background: #f3f5fa15;
+  top:1%;
+  left:40%;
   padding: 0px 0;
   overflow: hidden;
   color: black;

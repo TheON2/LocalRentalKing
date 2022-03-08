@@ -4,63 +4,55 @@ module.exports = class TogetherPost extends Sequelize.Model {
     return super.init(
       {
         boardNum: {
-          //물건빌려줘 물건빌려줄게 같이하자 동네놀이터.. 선택
-          type: Sequelize.STRING(50),
-          allowNull: false, //필수임
+          //화면왼쪽 물건빌려줘, 힘을빌려줘 등의 탭 구분 ~ 숫자로
+          type: Sequelize.INTEGER,
+          allowNull: false,
         },
         category: {
-          //질문게시판?자유게시판?그 카테고리 필수아님 이거 쓰는곳은 동네 놀이터 뿐임
-          type: Sequelize.STRING(50),
-          allowNull: true, //필수아님
+          //화면 오른쪽 공구,의류,전자기기 등의 카테고리 구분 // 글자로
+          type: Sequelize.STRING(20),
+          allowNull: true,
         },
-
         title: {
-          //제목
           type: Sequelize.STRING(50),
-          allowNull: false, //필수
+          allowNull: false,
         },
         content: {
-          //내용
           type: Sequelize.STRING(500),
-          allowNull: false, //필수
+          allowNull: false,
         },
-        originalprice: {
-          //렌탈비용
+        originalPrice: {
           type: Sequelize.INTEGER,
-          allowNull: true, //
+          allowNull: true,
         },
         sharedPrice: {
-          //렌탈비용
           type: Sequelize.INTEGER,
-          allowNull: true, //
+          allowNull: true,
         },
-        user_nickname: {
-          type: Sequelize.STRING(50),
-          allowNull: false, //필수
-        },
-
         user_location: {
           type: Sequelize.STRING(100),
-          allowNull: false, //필수
+          allowNull: false,
         },
       },
       {
         modelName: "TogetherPost",
-        tableName: "togetherposts",
-        charset: "utf8mb4", //한글도 쓸수있게
+        tableName: "togetherPosts",
+        charset: "utf8mb4",
         collate: "utf8mb4_general_ci", //한글 저장
         sequelize,
       }
     );
   }
   static associate(db) {
-    db.TogetherPost.hasMany(db.TogetherPostImage); //게시물은 많은 이미지를 가질 수 있다.
-    db.TogetherPost.hasMany(db.TogetherPostComment); //게시글은 많은 댓글을 가질 수 있다.
-    db.TogetherPost.belongsTo(db.User); //게시글은 유저에게 포함된다.->유저가 게시글을 많들었다.
-    //db.Post.belongsToMany(db.User, { through: "Like", as: "Likers" }); //포스트는 여러 사람으로부터 좋아요를 받을 수 있다.
-    //db.Post.hasMany(db.Community1); //물건빌려줘,빌려줄게,힘빌려줘힘빌려줄게
-    //db.Post.hasMany(db.Community2); //같이하자1+1
-    //db.Post.hasMany(db.Community3); //같이하자 배달
-    // db.Post.hasMany(db.Community4); //같이하자 공동구매
+    db.TogetherPost.belongsTo(db.User); //이건 post의 작성자 //post.addUser(여기서는 s가 안붙어) hasMany나 belongsToMany는 s가 논리적으로 붙지
+    db.TogetherPost.belongsToMany(db.User, {
+      through: "Favorite",
+      as: "Likers",
+    }); //게시글 좋아요 누른 사람들
+    //나중에 as 따라서 post.getLikers처럼 게시글 좋아요 누른 사람을 가져오게 된다.
+    //post.addLikers, post.removeLikers등의 관계형 메서드가 생긴다.
+    // add,get,set,remove -- 관계형 메서드
+    db.TogetherPost.hasMany(db.TogetherPostImage);
+    db.TogetherPost.hasMany(db.TogetherPostComment);
   }
 };

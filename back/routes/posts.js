@@ -1,113 +1,108 @@
 const express = require("express");
-const { Op } = require("sequelize"); //~보다 작다 새로운 문법형, 원래것 sql인젝션 위협있음
-const {
-  ProdPost,
-  PowerPost,
-  TogetherPost,
-  User,
-  ProdPostComment,
-  PowerPostComment,
-  TogetherPostComment,
-  ProdPostImage,
-  PowerPostImage,
-  TogetherPostImage,
-} = require("../models");
+const { Op } = require("sequelize");
+const { Post, User, Image, Comment } = require("../models");
+const TogetherPost = require("../models/togetherPost");
+const PowerPost = require("../models/powerPost");
+const ProdPost = require("../models/prodPost");
+const ProdPostImage = require("../models/prodPostImage");
+const ProdPostComment = require("../models/prodPostComment");
+const PowerPostImage = require("../models/powerPostImage");
+const PowerPostComment = require("../models/powerPostComment");
+const TogetherPostImage = require("../models/togetherPostImage");
+const TogetherPostComment = require("../models/togetherPostComment");
 
 const router = express.Router();
-//====================게시글 10개 보여주기==================================
-// router.get("/get10", async (req, res, next) => {
-router.get("/:tagData/post", async (req, res, next) => {
-  //게시판 처음 들어가면 10개 보여줌 작성자/ 컨텐츠 /이미지도 보여줌
-  try {
-    const where = {}; //초기에 조건없음
-    if (parseInt(req.query.lastId, 10)) {
-      //라스트 아이디가 0이 아니라면
 
-      if (req.params.tagData != null) {
-        //태그 데이터가 널이 아니라면->오른쪽 태그 눌렀음
-        (where.user_location = {
-          //유저 위치
-          [Op.eq]: req.body.location,
-        }),
-          (where.boardNum = {
-            //보드넘버
-            [Op.eq]: req.query.boardNum,
-          }),
-          (where.id = {
-            //라스트아이디
-            [Op.lt]: parseInt(req.query.lastId, 10),
-          }),
-          (where.category = {
-            //왼쪽탭
-            [Op.eq]: req.params.tagData,
-          }),
-          console.log(where); //다합쳐진 where완성
+// <--------- 게시물 10개씩 렌더링---------->
+//router.get("/", async (req, res, next) => {
+router.get("/:tag/post", async (req, res, next) => {
+  //게시판 처음 들어가면 10개 보여줌 작성자/ 컨텐츠 /이미지도 보여줌
+  const boardNum = req.query.boardNum;
+  const lastId = req.query.lastId;
+  console.log(lastId);
+
+  try {
+    const where = {}; // db에서 프론트가 전송한 아이디를 기반으로 유저id를 찾아낸다
+    if (req.params.tag == "전체") {
+      if (parseInt(lastId, 10)) {
+        //초기 로딩이 아닐때
+        where.id = { [Op.lt]: parseInt(lastId, 10) };
+        //where.user_location = { [Op.eq]: req.body.location };
+        where.boardNum = { [Op.eq]: boardNum };
       } else {
-        //태그 데이터가 널이라면->태그 안눌렀고 그냥10개 나옴
-        (where.user_location = {
-          [Op.eq]: req.body.location,
-        }),
-          (where.boardNum = {
-            //보드넘버
-            [Op.eq]: req.query.boardNum,
-          }),
-          (where.id = {
-            [Op.lt]: parseInt(req.query.lastId, 10),
-          }),
-          console.log(where);
+        // where.user_location = { [Op.eq]: req.body.location };
+        where.boardNum = { [Op.eq]: boardNum };
+      }
+    } else {
+      if (parseInt(lastId, 10)) {
+        //초기 로딩이 아닐때
+        where.id = { [Op.lt]: parseInt(lastId, 10) };
+        //where.user_location = { [Op.eq]: req.body.location };
+        where.boardNum = { [Op.eq]: boardNum };
+        where.category = { [Op.eq]: req.params.tag };
+      } else {
+        // where.user_location = { [Op.eq]: req.body.location };
+        where.boardNum = { [Op.eq]: boardNum };
+        where.category = { [Op.eq]: req.params.tag };
       }
     }
-    if (boardNum == 1 || boardNum == 2) {
-      //들어온 보드넘이 1혹은 2라면
-      const prodposts = await ProdPost.findAll({
-        //ProdPost테이블에서 찾을거임
-        where,
-        limit: 10, //10개만 가져와라
-        order: [["createdAt", "DESC"]], //생성 시간에 따라서 내림차순
-        include: [
-          {
-            model: ProdPostImage,
-          },
-          {
-            model: ProdPostComment,
-          },
-        ],
-      });
-      res.status(200).json(prodposts);
-    } else if (boardNum == 3 || boardNum == 4) {
-      //보드넘이3 혹은 4라면->힘을빌려줘,힘을 빌려줄게
-      const powerposts = await PowerPost.findAll({
-        //PowerPost테이블에서 찾을거임
-        where,
-        limit: 10, //10개만 가져와라
-        order: [["createdAt", "DESC"]],
-        include: [
-          {
-            model: PowerPostImage,
-          },
-          {
-            model: PowerPostComment,
-          },
-        ],
-      });
-      res.status(200).json(powerposts);
-    } else if (boardNum == 5) {
-      //보드넘이5라면->같이하자
-      const togetherposts = await TogetherPost.findAll({
-        //같이하자 테이블에서 찾을거임
-        where,
-        limit: 10, //10개만 가져와라
-        order: [["createdAt", "DESC"]],
-        include: [
-          {
-            model: TogetherPostImage,
-          },
-          {
-            model: TogetherPostComment,
-          },
-        ],
-      });
-      res.status(200).json(togetherposts);
+
+    {
+      if (boardNum == 1 || boardNum == 2) {
+        //들어온 보드넘이 1혹은 2라면
+        const prodposts = await ProdPost.findAll({
+          //ProdPost테이블에서 찾을거임
+
+          where,
+          limit: 10, //10개만 가져와라
+          order: [["createdAt", "DESC"]], //생성 시간에 따라서 내림차순
+
+          include: [
+            {
+              model: ProdPostImage,
+            },
+            {
+              model: ProdPostComment,
+            },
+          ],
+        });
+        console.log(prodposts);
+        res.status(200).json(prodposts);
+      } else if (boardNum == 3 || boardNum == 4) {
+        //보드넘이3 혹은 4라면->힘을빌려줘,힘을 빌려줄게
+        const powerposts = await PowerPost.findAll({
+          //PowerPost테이블에서 찾을거임
+          where,
+          limit: 10, //10개만 가져와라
+          order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: PowerPostImage,
+            },
+            {
+              model: PowerPostComment,
+            },
+          ],
+        });
+        res.status(200).json(powerposts);
+      } else if (boardNum == 5) {
+        //보드넘이5라면->같이하자
+        const togetherposts = await TogetherPost.findAll({
+          //같이하자 테이블에서 찾을거임
+          where,
+          limit: 10, //10개만 가져와라
+          order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: TogetherPostImage,
+            },
+            {
+              model: TogetherPostComment,
+            },
+          ],
+        });
+        res.status(200).json(togetherposts);
+      }
     }
   } catch (error) {
     console.error(error);
@@ -115,71 +110,154 @@ router.get("/:tagData/post", async (req, res, next) => {
   }
 });
 
-//============게시판마다 검색해서 결과 10개 포스트 가져오기==============
-router.get("/searchGet10", async (req, res, next) => {
-  //검색창의 검색 결과로 게시글을 조회함(제목으로 검색)
+router.get("/", async (req, res, next) => {
+  //카테고리별 조회 //요청을 프론트에서 어떻게 받을지 상의필요, req.param으로 받을지, req.query로 받을지
   try {
     const where = {};
+    const comNum = req.query.communityNum;
     if (parseInt(req.query.lastId, 10)) {
-      //초기 로딩이 아닐때
-      where.id = {
-        [Op.lt]: parseInt(req.query.lastId, 10),
-      }; //포스트id가 프론트에서 넘어온 lastId보다 작은 애들
-      where.title = {
-        [Op.substring]: req.body.search, //입력받은 search가 타이틀에 포함되어 있다면
-      };
-      where.user_location = {
-        [Op.eq]: req.body.location,
-      };
-      console.log(where);
+      //초기 로딩이 아닐 때
+      where.id = { [Op.lt]: parseInt(req.query.lastId, 10) }; // Op.lt ~보다작은 *operator
     }
+    // where.communityNum = {
+    //   //where절안에 있으면 lastId가 없을때 tab으로 구분해서 못보여줌
+    //   [Op.eq]: req.query.communityNum, //eq  equal
+    //};
+    if (comNum == "community1") {
+      const posts = await Post.findAll({
+        //   limit: 10, // 10개만 가져와라
+        //   offset: 0, // 시작인덱스. 0이면 1~10(limit)번 게시물까지 가져옴
+        //   order : [['createdAt','DESC']] //최신게시물부터 가져옴. 2차원 배열인 이유는 여러 기준으로 정렬할수있기때문에
+        // limit과 offset은 실무에서는 잘 안쓰는 방법, 중간에 게시글이 추가되거나 삭제되면 꼬여버리기때문에
+        // 실무에서는 pagination구현을 위해 limit과 lastId방식을 많이쓴다
 
-    if (boardNum == 1 || boardNum == 2) {
-      const prodposts = await ProdPost.findAll({
-        where,
-        limit: 10, //10개만 가져와라
-        order: [["createdAt", "DESC"]],
+        where, // sql에서 지원하는 offset대신에 우리가 lastId 정보를 만들어서 조회하도록
+        limit: 3, //테스트때는 우선은 2개씩만 렌더링하자 편의상
+        order: [
+          ["createdAt", "DESC"],
+          [Comment, "createdAt", "DESC"], // 여기에서 댓글 내림차순정리
+        ],
         include: [
+          //데이터를 가져올때는 항상 완성해서 가져와야한다.
           {
-            model: ProdPostImage,
+            model: User, //작성자
+            attributes: ["id", "nickname"],
           },
           {
-            model: ProdPostComment,
+            model: Image, //이미지
+          },
+          {
+            model: Comment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+              },
+            ],
+          },
+          {
+            model: Community1,
+          },
+          // //게시글이 몇개의 좋아요를 받고있는지 표시해주는부분. 구현미정, 구현방법미정
+          // {
+          //   model: User,
+          //   attributes: ["id"],
+          // },
+        ],
+      });
+    } else if (comNum == "community2") {
+      const posts = await Post.findAll({
+        where,
+        limit: 3,
+        order: [
+          ["createdAt", "DESC"],
+          [Comment, "createdAt", "DESC"],
+        ],
+        include: [
+          {
+            model: User, //작성자
+            attributes: ["id", "nickname"],
+          },
+          {
+            model: Image, //이미지
+          },
+          {
+            model: Comment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+              },
+            ],
+          },
+          {
+            model: Community2,
           },
         ],
       });
-      res.status(200).json(prodposts);
-    } else if (boardNum == 3 || boardNum == 4) {
-      const powerposts = await PowerPost.findAll({
+    } else if (comNum == "community3") {
+      const posts = await Post.findAll({
         where,
-        limit: 10, //10개만 가져와라
-        order: [["createdAt", "DESC"]],
+        limit: 3,
+        order: [
+          ["createdAt", "DESC"],
+          [Comment, "createdAt", "DESC"],
+        ],
         include: [
           {
-            model: PowerPostImage,
+            model: User, //작성자
+            attributes: ["id", "nickname"],
           },
           {
-            model: PowerPostComment,
+            model: Image, //이미지
+          },
+          {
+            model: Comment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+              },
+            ],
+          },
+          {
+            model: Community3,
           },
         ],
       });
-      res.status(200).json(powerposts);
-    } else if (boardNum == 5) {
-      const togetherposts = await TogetherPost.findAll({
+    } else if (comNum == "community4") {
+      const posts = await Post.findAll({
         where,
-        limit: 10, //10개만 가져와라
-        order: [["createdAt", "DESC"]],
+        limit: 3,
+        order: [
+          ["createdAt", "DESC"],
+          [Comment, "createdAt", "DESC"],
+        ],
         include: [
           {
-            model: TogetherPostImage,
+            model: User, //작성자
+            attributes: ["id", "nickname"],
           },
           {
-            model: TogetherPostComment,
+            model: Image, //이미지
+          },
+          {
+            model: Comment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+              },
+            ],
+          },
+          {
+            model: Community4,
           },
         ],
       });
-      res.status(200).json(togetherposts);
     }
+    res.status(200).json(posts);
   } catch (error) {
     console.error(error);
     next(error);

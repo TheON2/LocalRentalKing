@@ -5,26 +5,20 @@ module.exports = class PowerPostComment extends Sequelize.Model {
       {
         content: {
           type: Sequelize.STRING(100),
-          allowNull: false, //필수
-        },
-
-        userNickname: {
-          type: Sequelize.STRING(50),
-          allowNull: false, //필수
+          allowNull: false,
         },
       },
-
       {
         modelName: "PowerPostComment",
-        tableName: "powerpostcomments",
-        charset: "utf8mb4", //한글도 쓸수있게
-        collate: "utf8mb4_general_ci", //한글 저장
+        tableName: "powerPostComments",
+        charset: "utf8mb4",
+        collate: "utf8mb4_general_ci",
         sequelize,
       }
     );
   }
   static associate(db) {
     db.PowerPostComment.belongsTo(db.PowerPost);
-    //db.Comment.belongsTo(db.User);
+    db.PowerPostComment.belongsTo(db.User); //comments 테이블의 로우를 불러올 때 연결된 users 테이블의 로우를 가져온다.
   }
 };
