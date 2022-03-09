@@ -328,32 +328,6 @@ router.patch("/location", isLoggedIn, async (req, res, next) => {
   }
 });
 
-//  <------ findAll test ----->
-router.get("/findAll", (req, res) => {
-  //axios.get('http://localhost:3065/user/findAll')
-  User.findAll().then((result) => {
-    //findAll메서드 인자에 { raw : true }옵션을 추가하면 dataValues만 리턴 - 이러면 result가 비어있는 어레이객체로 반환됨
-    console.log(result);
-    //res.send(result); 이렇게 보내니까  postman에서 json배열로 받아지는데?
-  });
-});
-
-//  <------ findOne test ----->
-router.get("/findOne", (req, res) => {
-  //axios.get('http://localhost:3065/user/findOne')
-  User.findAll({
-    where: {
-      id: 2,
-    },
-  }).then((result) => {
-    // then이란건 promise가 정상적으로 잘수행이 되어서 최종적으로 resolve라는 콜백함수로 전달한 값이 들어가있음
-    //만약에 error가 발생했다면 rejected라는 함수를 통해서 new한 error객체를 보내준다
-    //promise객체에 then이 호출이되면 다시 promise가 반환되기때문에 이 뒤로 catch같은 체이닝을 걸어줄수있음
-    console.log(result);
-    res.send(result);
-  });
-});
-
 module.exports = router;
 
 // 특정 필드(Column) [attributes 옵션 사용]

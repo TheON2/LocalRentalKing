@@ -160,49 +160,104 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
   }
 });
 
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-// <------------------------  together 같이하자 글쓰기 테스트  ---------------------------->
-router.post("/togetherPostTest", upload.none(), async (req, res, next) => {
+//====================글 하나 찾아오기===========================
+router.get("/singlepost", async (req, res, next) => {
   try {
-    const togetherPost = await TogetherPost.create({
-      boardNum: boardNum,
-      category: req.body.category, //
-      title: req.body.title,
-      content: req.body.content,
-      originalPrice: req.body.originalPrice,
-      sharedPrice: req.body.sharedPrice,
-      UserId: req.body.userid,
-      user_nickname: req.body.nickname,
-      user_location: req.body.location,
-    });
-    if (req.body.image) {
-      if (Array.isArray(req.body.image)) {
-        //이미지 여러개
-        const images = await Promise.all(
-          req.body.image.map((image) =>
-            TogetherPostImage.create({ src: image })
-          )
-        );
-        await togetherPost.addTogetherPosTImages(images);
-      } else {
-        //이미지 하나
-        const image = await TogetherPostImage.create({ src: req.body.image });
-        await togetherPost.addPTogetherPostImages(image);
-      }
+    const boardNum = req.query.postBoardNum;
+    const postId = req.query.postId;
+    if (boardNum == 1 || boardNum == 2) {
+      //들어온 보드넘이 1혹은 2라면
+      const prodpost = await ProdPost.findOne({
+        //ProdPost테이블에서 찾을거임
+
+        where: {
+          id: postId,
+        },
+        include: [
+          //데이터를 가져올때는 항상 완성해서 가져와야한다.
+          {
+            model: User, //작성자
+            attributes: ["id", "nickname"],
+          },
+          {
+            model: ProdPostImage, //이미지
+          },
+          {
+            model: ProdPostComment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+              },
+            ],
+          },
+        ],
+      });
+      console.log(prodpost);
+      res.status(200).json(prodpost);
+    } else if (boardNum == 3 || boardNum == 4) {
+      const powerpost = await PowerPost.findOne({
+        where: {
+          id: postId,
+        },
+        include: [
+          //데이터를 가져올때는 항상 완성해서 가져와야한다.
+          {
+            model: User, //작성자
+            attributes: ["id", "nickname"],
+          },
+          {
+            model: PowerPostImage, //이미지
+          },
+          {
+            model: PowerPostComment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+              },
+            ],
+          },
+        ],
+      });
+      console.log(powerpost);
+      res.status(200).json(powerpost);
+    } else if (boardNum == 5) {
+      const togetherpost = await TogetherPost.findOne({
+        where: {
+          id: postId,
+        },
+        include: [
+          //데이터를 가져올때는 항상 완성해서 가져와야한다.
+          {
+            model: User, //작성자
+            attributes: ["id", "nickname"],
+          },
+          {
+            model: TogetherPostImage, //이미지
+          },
+          {
+            model: TogetherPostComment, //댓글
+            include: [
+              {
+                model: User, //댓글 작성자
+                attributes: ["id"], //댓글 수만 표시하면 되니까
+                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+              },
+            ],
+          },
+        ],
+      });
+      console.log(togetherpost);
+      res.status(200).json(togetherpost);
     }
-    res.status(201).json(togetherPost);
-  } catch (error) {
+  } catch {
     console.error(error);
     next(error);
   }
 });
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
 
 //     <------ 물건빌려줘/빌려줄게 이미지 업로드 ------>
 router.post(
@@ -249,73 +304,90 @@ router.post(
   }
 );
 
-//     <-- 이미지 업로드 테스트 -->
-router.post("/prodImages", upload.array("image"), async (req, res, next) => {
-  console.log(req.files); //업로드된 이미지 정보
-  res.json(req.files.map((v) => v.filename));
-});
-
-// <----댓글 작성 라우터---->
-router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
-  // POST / post / ? /comment
-  //주소는 프론트와 백사이의 약속
-  //주소에서 :postId는 요청만 보더라도 몇번 게시물에 댓글을 다는거구나~하고 한눈에 알수있게하려고
-  //그런데 몇번 게시물에 요청할건지는 가변적. :postId로 파라미터로 받아서처리
-  try {
-    const post = await Post.findOne({
-      where: { id: req.params.postId },
-    });
-    if (!post) {
-      return res.status(403).send("존재하지 않는 게시물입니다.");
+// ======================   댓글 작성======================
+router.post("/writeComment", isLoggedIn, async (req, res, next) => {
+  const boardNum = req.body.boardNum;
+  if (boardNum == 1 || boardNum == 2) {
+    try {
+      const post = await ProdPost.findOne({
+        where: { id: req.body.postId },
+      });
+      if (!post) {
+        return res.status(403).send("존재하지 않는 게시물입니다.");
+      }
+      const comment = await ProdPostComment.create({
+        content: req.body.content,
+        PostId: req.body.postId,
+        UserId: req.body.id,
+      });
+      const fullComment = await ProdPostComment.findOne({
+        where: { id: comment.id },
+        include: [
+          {
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+        ],
+      });
+      res.status(201).json(fullComment);
+    } catch (error) {
+      console(error);
+      next(error);
     }
-    const comment = await Comment.create({
-      content: req.body.content,
-      PostId: req.params.postId,
-      UserId: req.user.id,
-    });
-    const fullComment = await Comment.findOne({
-      where: { id: comment.id },
-      include: [
-        {
-          model: User,
-          attributes: ["id", "nickname"],
-        },
-      ],
-    });
-    res.status(201).json(fullComment);
-  } catch (error) {
-    console(error);
-    next(error);
-  }
-});
-
-// <----댓글 작성 라우터 테스트---->
-router.post("/:postId/comment", async (req, res, next) => {
-  try {
-    const post = await Post.findOne({
-      where: { id: req.params.postId },
-    });
-    if (!post) {
-      return res.status(403).send("존재하지 않는 게시물입니다.");
+  } else if (boardNum == 3 || boardNum == 4) {
+    try {
+      const post = await PowerPost.findOne({
+        where: { id: req.body.postId },
+      });
+      if (!post) {
+        return res.status(403).send("존재하지 않는 게시물입니다.");
+      }
+      const comment = await PowerPostComment.create({
+        content: req.body.content,
+        PostId: req.body.postId,
+        UserId: req.body.id,
+      });
+      const fullComment = await PowerPostComment.findOne({
+        where: { id: comment.id },
+        include: [
+          {
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+        ],
+      });
+      res.status(201).json(fullComment);
+    } catch (error) {
+      console(error);
+      next(error);
     }
-    const comment = await Comment.create({
-      content: req.body.content,
-      PostId: req.params.postId,
-      UserId: req.user.id,
-    });
-    const fullComment = await Comment.findOne({
-      where: { id: comment.id },
-      include: [
-        {
-          model: User,
-          attributes: ["id", "nickname"],
-        },
-      ],
-    });
-    res.status(201).json(fullComment);
-  } catch (error) {
-    console(error);
-    next(error);
+  } else if (boardNum == 5) {
+    try {
+      const post = await TogetherPost.findOne({
+        where: { id: req.body.postId },
+      });
+      if (!post) {
+        return res.status(403).send("존재하지 않는 게시물입니다.");
+      }
+      const comment = await TogetherPostComment.create({
+        content: req.body.content,
+        PostId: req.body.postId,
+        UserId: req.body.id,
+      });
+      const fullComment = await TogetherPostComment.findOne({
+        where: { id: comment.id },
+        include: [
+          {
+            model: User,
+            attributes: ["id", "nickname"],
+          },
+        ],
+      });
+      res.status(201).json(fullComment);
+    } catch (error) {
+      console(error);
+      next(error);
+    }
   }
 });
 
@@ -369,23 +441,101 @@ router.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
 //   }
 // });
 
-//       <----- 게시글 삭제 ----->
-router.delete("/:postId", isLoggedIn, async (req, res, next) => {
-  // DELETE /post / ?
-  try {
-    await Post.destroy({
-      where: {
-        id: req.params.postId, //게시글 id
-        UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
-      },
-    });
-    res.status(200).json({ PostId: parseInt(req.params.postId, 10) }); //params는 문자열로가서 int로 파싱
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
+router.delete("/delete1", async (req, res, next) => {
+  const imgsrc = await ProdPostImage.findAndCountAll({
+    where: {
+      [Op.or]: [{ ProdPostId: 1 }, { ProdPostId: 2 }],
+    },
+  });
 });
 
-router.patch("/nickname", isLoggedIn, (req, res) => {});
+//       <----- 게시글 삭제 ----->
+router.delete("/delete", isLoggedIn, async (req, res, next) => {
+  // DELETE /post / ?
+  const boardNum = req.body.boardNum;
+  if (boardNum == 1 || boardNum == 2) {
+    //들어온 보드넘이 1혹은 2라면
+    try {
+      const imgsrc = await ProdPostImage.findAll({
+        where: {
+          ProdPostId: req.body.postId,
+        },
+      });
+
+      await ProdPost.destroy({
+        where: {
+          id: req.body.postId, //게시글 id
+          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+        },
+      });
+      await ProdPostComment.destroy({
+        where: {
+          ProdPostId: req.body.postId, //게시글 id
+          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+        },
+      });
+      await ProdPostImage.destroy({
+        where: {
+          ProdPostId: req.body.postId, //게시글 id
+        },
+      });
+      // fs.unlink();
+      res.status(200).json.send("삭제 성공");
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  } else if (boardNum == 3 || boardNum == 4) {
+    //들어온 보드넘이 1혹은 2라면
+    try {
+      await PowerPost.destroy({
+        where: {
+          id: req.body.postId, //게시글 id
+          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+        },
+      });
+      await PowerPostComment.destroy({
+        where: {
+          PowerPostId: req.body.postId, //게시글 id
+          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+        },
+      });
+      await PowerPostImage.destroy({
+        where: {
+          PowerPostId: req.body.postId, //게시글 id
+        },
+      });
+      res.status(200).json.send("삭제 성공");
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  } else if (boardNum == 5) {
+    //들어온 보드넘이 1혹은 2라면
+    try {
+      await TogetherPost.destroy({
+        where: {
+          id: req.body.postId, //게시글 id
+          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+        },
+      });
+      await TogetherPostComment.destroy({
+        where: {
+          TogetherPostId: req.body.postId, //게시글 id
+          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+        },
+      });
+      await TogetherPostImage.destroy({
+        where: {
+          TogetherPostId: req.body.postId, //게시글 id
+        },
+      });
+      res.status(200).json.send("삭제 성공");
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  }
+});
 
 module.exports = router;
