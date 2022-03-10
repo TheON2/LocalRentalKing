@@ -48,8 +48,7 @@ const PostCard1 = ({ post }) => {
 
           {post.boardNum === 5 && post.category === '기타' ? (
             <p>
-              비용(￦):
-              {post.originalPrice === null ? '협의' : post.originalPrice}
+              비용(￦): {post.originalPrice}
             </p>
           ) : null}
         </div>
