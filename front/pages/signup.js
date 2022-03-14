@@ -6,17 +6,18 @@ import {useDispatch, useSelector} from 'react-redux';
 import Router from 'next/router';
 import useInput from '../hooks/useInput';
 import AppLayout from '../components/AppLayout/AppLayout';
-import {SIGN_UP_REQUEST} from '../reducers/user';
+import {SIGN_UP_REQUEST, UPDATE_LOCAL} from '../reducers/user';
+import Layout from "../components/Layout";
+import SearchLocation from "../components/SearchLocation";
 
 const ErrorMessage = styled.div`
 color:red`;
 
 function Signup() {
   const dispatch = useDispatch();
-  const { signUpLoading, signUpDone, signUpError, me } = useSelector((state) => state.user);
+  const { signUpLoading, signUpDone, signUpError, me , location } = useSelector((state) => state.user);
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
-  const [location, onChangeLocation] = useInput('');
   const [password, onChangePassword] = useInput('');
   const [password2, setPassword2] = useState('');
   const [password2Error, setPassword2Error] = useState(false);
@@ -60,10 +61,10 @@ function Signup() {
       data: { email, password, nickname , location },
     });
     Router.push('/'); // 임시로 완료된거로 치고 메인으로 돌려보낸다
-  }, [email, password, password2, term]);
+  }, [email, password, password2, term, location]);
 
   return (
-    <AppLayout>
+    <Layout>
       <Head>
         <title>회원가입 | 우리동네 렌탈대장</title>
       </Head>
@@ -81,7 +82,8 @@ function Signup() {
         <div>
           <label htmlFor="user-location">지역</label>
           <br />
-          <Input name="user-location" value={location} onChange={onChangeLocation} required />
+          <SearchLocation/>
+          {/*<Input name="user-location" value={location} required />*/}
         </div>
         <div>
           <label htmlFor="user-password">비밀번호</label>
@@ -115,7 +117,7 @@ function Signup() {
         </div>
       </Form>
 
-    </AppLayout>
+    </Layout>
   );
 }
 

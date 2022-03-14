@@ -1,41 +1,98 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import wrapper from '../store/configureStore';
-import { useDispatch, useSelector } from 'react-redux';
-import { useInView } from 'react-intersection-observer';
-import { END } from 'redux-saga';
+import {useDispatch, useSelector} from 'react-redux';
+import {useInView} from 'react-intersection-observer';
+import {END} from 'redux-saga';
 import {Button, Col, Row} from 'antd';
 
 import AppLayout from '../components/AppLayout/AppLayout';
 import LoginForm from '../components/LoginForm';
 
-import {LOAD_MY_INFO_REQUEST, logoutRequestAction} from '../reducers/user';
-import {LOAD_POST_REQUEST, TEST, UPDATE_TAG} from '../reducers/post';
+import {LOAD_MY_INFO_REQUEST, logoutRequestAction, UPDATE_LOCAL} from '../reducers/user';
+import {LOAD_POST_REQUEST, TEST, UPDATE_BOARD, UPDATE_TAG} from '../reducers/post';
 import Tags from "../components/Tags";
-import PostCard1 from "../components/DH/PostCard1";
+import PostCard1 from "../components/PostCard1";
 import axios from "axios";
+import Layout from "../components/Layout";
+import PostCard2 from "../components/PostCard2";
+import SearchBar from "../components/SearchBar";
+import styled from "styled-components";
 
-function Home() {
+const PostCarDiv2 = styled.div`
+  width: 100%;
+  display: flex;
+  // background:red;
+  flex-wrap: wrap;
+  // justify-content:center;
+`;
+
+function SSRPAGE() {
   const dispatch = useDispatch();
-  const { me } = useSelector((state) => state.user);
-  const { mainPosts, hasMorePost, loadPostLoading, reTweetError, id , object_TagsData , selectedTag } = useSelector((state) => state.post);
-  const [ref, inView] = useInView();
+  const {me, location} = useSelector((state) => state.user);
+  const {
+    mainPosts,
+    hasMorePost,
+    loadPostLoading,
+    reTweetError,
+    id,
+    object_TagsData,
+    selectedTag
+  } = useSelector((state) => state.post);
+  const [view, setView] = useState(true);
 
-  const string = "abc*def*123";
-  const split = string.split("*");
+  const onSwitch = useCallback(() => {
+    setView(!view);
+  }, [view]);
 
-  console.log(split);
+  useEffect(() => {
+  dispatch({
+      type: LOAD_MY_INFO_REQUEST,
+    });
+  }, []);
+
+  useEffect(() => {
+    if(me) {
+      dispatch({
+        type: UPDATE_LOCAL,
+        data: me.location,
+      });
+    }
+  }, [me]);
+
+  useEffect(() => {
+    if(me) {
+      dispatch({
+        type: UPDATE_TAG,
+        data: "전체",
+      });
+      dispatch({
+        type: LOAD_POST_REQUEST,
+        data: "전체",
+        boardNum: 1,
+        location: location,
+      });
+    }
+  }, []);
+
+  // useEffect(()=>{
+  //   dispatch({
+  //     type: LOAD_POST_REQUEST,
+  //     data: "전체",
+  //     boardNum: 1,
+  //   });
+  // },[]);
 
   useEffect(() => {
     const onScroll = () => {
-      if (window.pageYOffset + document.documentElement.clientHeight > document.documentElement.scrollHeight - 300) {
+      if (window.pageYOffset + document.documentElement.clientHeight > document.documentElement.scrollHeight - 100) {
         if (hasMorePost && !loadPostLoading) {
           const lastId = mainPosts[mainPosts.length - 1]?.id; // 인피니트 스크롤 구현을 위해 프론트 서버의 현재 렌더링중인 게시글들중 가장 아래 게시물의 게시넘버를 lastId로
-          console.log(selectedTag);
           dispatch({
             type: LOAD_POST_REQUEST,
-            data:selectedTag,
-            boardNum:1,
-            lastId:lastId,
+            data: selectedTag,
+            boardNum: 1,
+            lastId: lastId,
+            location:location,
           });
         } // 지역변수를 건드려봣자 어차피 렌더링이 되지 않는다. 실제 동작으로 테스트 해야할듯
       }
@@ -44,31 +101,26 @@ function Home() {
     return () => {
       window.removeEventListener('scroll', onScroll);
     };
-  }, [ hasMorePost, loadPostLoading]);
+  }, [hasMorePost, loadPostLoading]);
 
   return (
-    <div>{me ? (
-      <AppLayout>
-        {/*<Button onClick={}> 로그아웃</Button>*/}
-        <Tags tagsData={object_TagsData} boardNum={1}/>
-        {/*{post1.map((post) => <PostCard1 key={post.Id} post={post}/>)}*/}
-        {mainPosts.map((post) => <PostCard1 key={post.id} post={post} />)}
-        {/*<div ref={hasMorePost && !loadPostLoading ? ref : undefined} />*/}
-      {/* 아직 게시물을 전부 열람하지 않았고 && 게시물을 요청하는 중이 아닐경우 인피니트 스크롤 동작 : 아닐경우 undefined */}
-      </AppLayout>
-    ) : (
-      <Row gutter={8}>
-        <Col xs={24} md={10}>
-          <img src="main.png" style={{ height: 950 }}/>
-        </Col>
-        <Col xs={24} md={10}>
-          <h1>우리동네 렌탈대장을 지금 이용해 보세요!</h1>
-          <LoginForm style={{ marginTop: 300 }} />
-        </Col>
-        <Col xs={24} md={4}>
-        </Col>
-      </Row>
-    )}
+    <div>
+      {view ? (
+        <Layout>
+          <Tags tagsData={object_TagsData} boardNum={1}/>
+          <Button onClick={onSwitch}>전환스위치</Button>
+          {mainPosts.map((post) => <PostCard1 key={post.id} post={post}/>)}
+        </Layout>
+      ) : (
+
+        <Layout>
+          <PostCarDiv2>
+          <Tags tagsData={object_TagsData} boardNum={1}/>
+          <Button onClick={onSwitch}>전환스위치</Button>
+          {mainPosts.map((post) => <PostCard2 key={post.id} post={post}/>)}
+        </PostCarDiv2>
+        </Layout>
+      )}
     </div>
   );
 }
@@ -81,19 +133,20 @@ export const getServerSideProps = wrapper.getServerSideProps(async (context) => 
     axios.defaults.headers.Cookie = cookie;
   }
   context.store.dispatch({
-    type: LOAD_MY_INFO_REQUEST,
+    type: UPDATE_TAG,
+    data: "전체",
   });
   context.store.dispatch({
-    type: UPDATE_TAG,
-    data:"전체",
+    type: UPDATE_BOARD,
+    data: 1,
   });
   context.store.dispatch({
     type: LOAD_POST_REQUEST,
-    data:"전체",
-    boardNum:1,
+    data: "전체",
+    boardNum: 1,
   });
   context.store.dispatch(END);
   await context.store.sagaTask.toPromise();
 });
 
-export default Home;
+export default SSRPAGE;

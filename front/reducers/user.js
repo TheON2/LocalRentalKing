@@ -24,10 +24,13 @@ export const initialState = {
   changeNicknameError: null,
   userInfo: null,
   me: null,
+  location: null,
   usersInfo: {},
   signUpData: {},
   loginData: {},
 };
+
+export const UPDATE_LOCAL = 'UPDATE_LOCAL';
 
 export const LOAD_MY_INFO_REQUEST = 'LOAD_MY_INFO_REQUEST';
 export const LOAD_MY_INFO_SUCCESS = 'LOAD_MY_INFO_SUCCESS';
@@ -72,6 +75,9 @@ export const logoutRequestAction = () => ({
 // (이전상태,액션) => 다음상태
 const reducer = (state = initialState, action) => produce(state, (draft) => {
   switch (action.type) {
+    case UPDATE_LOCAL:
+      draft.location = action.data;
+      break;
     case LOAD_USER_REQUEST:
       draft.loadUserLoading = true;
       draft.loadUserError = null;
@@ -109,6 +115,15 @@ const reducer = (state = initialState, action) => produce(state, (draft) => {
       draft.loadMyInfoLoading = false;
       draft.me = action.data;
       draft.loadMyInfoDone = true;
+      draft.logInLoading= false; // 로그인 시도중
+      draft.logInDone= false;
+      draft.logInError= null;
+      draft.logOutLoading= false; // 로그아웃 시도중
+      draft.logOutDone= false;
+      draft.logOutError= null;
+      draft.signUpLoading= false; // 회원가입 시도중
+      draft.signUpDone= false;
+      draft.signUpError= null;
       break;
     case LOAD_MY_INFO_FAILURE:
       draft.loadMyInfoLoading = false;
@@ -123,6 +138,7 @@ const reducer = (state = initialState, action) => produce(state, (draft) => {
       draft.logInLoading = false;
       draft.me = action.data;
       draft.logInDone = true;
+      draft.location = action.data.location;
       break;
     case LOG_IN_FAILURE:
       draft.logInLoading = false;

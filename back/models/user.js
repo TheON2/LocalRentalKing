@@ -55,10 +55,19 @@ module.exports = class User extends Sequelize.Model {
     db.User.hasMany(db.ProdPost); //foreignKey를 따로 지정하지 않는다면 이름이 모델명+기본 키인 컬럼이 모델에 생성된다
     db.User.hasMany(db.PowerPost);
     db.User.hasMany(db.TogetherPost);
-    db.User.hasMany(db.TogetherPostComment); //users 테이블의 로우 하나를 불러올 때 연결된 comments 테이블의 로우들도 같이 불러올 수 있다.
+    db.User.hasMany(db.TogetherPostComment);
     db.User.hasMany(db.PowerPostComment);
     db.User.hasMany(db.ProdPostComment);
-
+    // db.User.belongsToMany(db.User, {
+    //   through: "message",
+    //   as: "receiver",
+    //   foreignKey: "senderId",
+    // });
+    // db.User.belongsToMany(db.User, {
+    //   through: "message",
+    //   as: "sender",
+    //   foreignKey: "receiverId",
+    // });
     //image는 유저하나당 프로필사진 1개뿐이므로 따로 테이블로 빼지않고 컬럼화
 
     //db.User.belongsToMany(db.Post, { through: "Like", as: "Liked" }); //유저가 좋아요를 누른 게시물들
@@ -78,5 +87,21 @@ module.exports = class User extends Sequelize.Model {
     //   as: "Followings",
     //   foreignKey: "FollowerId",
     // });
+    //     //쪽지 기능을 위한 재귀적 모델링 (user사이의 m:n)
+    db.User.belongsToMany(db.User, {
+      through: db.Message, //through table
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+      as: "Senders", //부르는 입장에서 불리는 테이블의 알리아스 - 나중에 시퀄라이즈 쿼리문에 사용
+      foreignKey: "ReceiverId", //들어가는 컬럼명
+    });
+
+    db.User.belongsToMany(db.User, {
+      through: db.Message,
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+      as: "Receivers",
+      foreignKey: "SenderId",
+    });
   }
 };

@@ -24,7 +24,6 @@ import {
   SIGN_UP_SUCCESS,
 } from '../reducers/user';
 
-
 function loadMyInfoAPI() {
   return axios.get('/user');
 }
@@ -143,7 +142,6 @@ function* changeNickName(action) {
     });
   }
 }
-
 
 function* watchLogin() {
   yield takeLatest(LOG_IN_REQUEST, logIn);

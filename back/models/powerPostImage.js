@@ -3,12 +3,10 @@ module.exports = class PowerPostImage extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        //이미지가 post의 이미지도 있고 user 프로필이미지도있는데 어떻게 구현하지? 각각의 postId나 userId로 찾아들어가면 되는건가?>
-        //user프로필이미지는 어차피 1:1이니까 관계맺지말고 컬럼화하는식으로 방향을 잡아보자
         src: {
-          //이미지 서버에 저장할때 이미지이름으로 저장하면 중복되는 문제가 발생할여지가있으니까 이미지파일의 아이디값을 따서 저장하는 방식으로
           type: Sequelize.STRING(200),
-          allowNull: false,
+          allowNull: true, //사실상 널값이 들어올 일은 없다.글 추가 부분에서 이미지가 있는지 없는지에 따라서
+          //create 해줄 것이기 때문에 널값이 들어올 일은 없으나 만일을 대비해서 true로 해줬다.
         },
       },
       {
@@ -22,6 +20,8 @@ module.exports = class PowerPostImage extends Sequelize.Model {
     );
   }
   static associate(db) {
-    db.PowerPostImage.belongsTo(db.PowerPost);
+    db.PowerPostImage.belongsTo(db.PowerPost, {
+      onDelete: "CASCADE", //연관된 파워포스트가 삭제되면 같이 삭제되겠다.
+    });
   }
 };

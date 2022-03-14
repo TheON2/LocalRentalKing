@@ -9,9 +9,9 @@ const passportConfig = require("./passport");
 
 const passport = require("passport");
 const dotenv = require("dotenv");
-const path = require("path");
+const path = require("path"); //기본 경로를 알려줌
 
-const userRouter = require("./routes/user");
+const userRouter = require("./routes/user"); //유저 관련 라우터,회원가입,로그인,로그아웃 등등..
 const postRouter = require("./routes/post"); //게시글 1개만 컨트롤하는 라우터 (게시글 1개를 작성하고, 조회하고~)
 const postsRouter = require("./routes/posts"); //게시글 여러개를 컨트롤하기위한 라우터
 
@@ -60,8 +60,8 @@ app.use(passport.session()); //req.session 객체에 passport 정보를 저장
 //req.session 객체는 express-session에서 생성하니까 passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야한다.
 
 app.use("/user", userRouter); //user가 prefix로 붙는다
-app.use("/post", postRouter);
-app.use("/posts", postsRouter);
+app.use("/post", postRouter); //post가 prefix로 붙는다
+app.use("/posts", postsRouter); //posts가 prefix로 붙는다
 
 app.listen(3065, () => {
   console.log("서버 실행중");

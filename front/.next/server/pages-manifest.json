@@ -2,6 +2,6 @@
   "/_app": "pages/_app.js",
   "/_document": "pages/_document.js",
   "/_error": "pages/_error.js",
-  "/objectrecieve": "pages/objectrecieve.js",
-  "/playground": "pages/playground.js"
+  "/write": "pages/write.js",
+  "/": "pages/index.js"
 }

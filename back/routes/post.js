@@ -1,11 +1,8 @@
 const express = require("express");
 const multer = require("multer"); //멀터는 폼마다 형식들이 다르기 때문에 멀터미들웨어를 사용해서 라우터마다 다르게 세팅필요
-const path = require("path"); //노드에서 제공하는 모듈 http처럼, 설치가 필요없는 모듈
-const fs = require("fs"); //file system을 조작할수있는 모듈. 폴더같은 걸 만들어줄수도있음
-//const passport = require("passport");
-//const bcrypt = require("bcrypt"); //해쉬화 알고리즘
+const path = require("path"); //노드에서 제공하는 모듈 http처럼, 설치가 필요없는 모듈,기본 경로를 가져온다
+const fs = require("fs"); //file system을 조작할수있는 모듈.
 const {
-  Post,
   User,
   ProdPost,
   ProdPostImage,
@@ -16,12 +13,12 @@ const {
   TogetherPost,
   TogetherPostImage,
   TogetherPostComment,
-} = require("../models");
+} = require("../models"); //models에서 가져와서 쓰겠다.
 const { isLoggedIn } = require("./middlewares");
-//const { route } = require("./user");
 
 const router = express.Router();
 
+//들어가기 전에 uploads폴더가 없으면 만들겠다. 있다면 안만든다.
 try {
   fs.accessSync("uploads");
 } catch (error) {
@@ -41,7 +38,7 @@ const upload = multer({
       //사진.png
       const ext = path.extname(file.originalname); //확장자추출(.png, .jpg 등)
       const basename = path.basename(file.originalname, ext); // 사진
-      done(null, basename + "_" + new Date().getTime() + ext); //사진_1513515313.png (같은 이름으로 이미지를 업로드하면 노드에서는 덮어씌워버려서 시간까지추가해서 올리는 코드)
+      done(null, basename + "_" + new Date().getTime() + ext); //사진_1513515313.png (같은 이름으로 이미지를 업로드하면 노드에서는 기존파일에 덮어씌워버려서 시간까지추가해서 올리는 코드)
     },
   }),
   limits: { fileSize: 28 * 1024 * 1024 }, //20mb로 파일 업로드 크기 제한
@@ -49,7 +46,7 @@ const upload = multer({
 
 // <------------------------   글쓰기   ---------------------------->
 router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
-  // POST / post
+  // POST / post/write
   const boardNum = req.body.boardNum;
   if (boardNum == 1 || boardNum == 2) {
     //1:물건빌려줘, 2:물건 빌려줄게
@@ -59,8 +56,9 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
     console.log(req.body.content);
 
     try {
+      //ProdPost 테이블에 create 하겠다
       const prodPost = await ProdPost.create({
-        boardNum: req.body.boardNum,
+        boardNum: boardNum,
         category: req.body.category, // 공구, 의류, 전자기기, 서적 등등 //
         title: req.body.title,
         content: req.body.content,
@@ -70,6 +68,7 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
         user_location: req.body.location,
       });
       if (req.body.image) {
+        //만약 글 작성시 이미지를 넣었다면
         if (Array.isArray(req.body.image)) {
           //이미지가 여러개올라오면 image:[사진1.png, 사진2.png]  ~배열
           const images = await Promise.all(
@@ -82,9 +81,7 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
           await prodPost.addProdPostImages(image);
         }
       }
-      //부족한 정보들(이미지, 댓글,글쓴이 )을 합쳐서 프론트에 보내줌
       const fullPost = await ProdPost.findOne({ where: { id: prodPost.id } });
-      console.log(fullPost);
       res.status(201).json(fullPost); //프론트로 돌려줌
     } catch (error) {
       console.error(error);
@@ -92,7 +89,6 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
     }
   } else if (boardNum == 3 || boardNum == 4) {
     //3:힘을빌려줘, 4:힘을 빌려줄게
-    console.log("2번에 걸렸음");
     try {
       const powerPost = await PowerPost.create({
         boardNum: boardNum,
@@ -124,7 +120,6 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
     }
   } else if (boardNum == 5) {
     //5:같이하자
-    console.log("3번에 걸렸음");
     try {
       const togetherPost = await TogetherPost.create({
         boardNum: boardNum,
@@ -162,47 +157,45 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
 
 //====================글 하나 찾아오기===========================
 router.get("/singlepost", async (req, res, next) => {
+  // GET / post/singlepost
+  console.log("싱글포스트 진입");
   try {
-    const boardNum = req.query.postBoardNum;
-    const postId = req.query.postId;
+    const boardNum = req.query.postBoardNum; //쿼리 스트링으로 받아온 postBoardNum을 쓰겠다
+    const postId = req.query.postId; //쿼리 스트링으로 받아온 postId를 쓰겠다
     if (boardNum == 1 || boardNum == 2) {
-      //들어온 보드넘이 1혹은 2라면
+      //쿼리 스트링으로 받아온 보드 넘버가 1 혹은 2라면(물건 빌려줘/물건 빌려줄게 일때)
       const prodpost = await ProdPost.findOne({
-        //ProdPost테이블에서 찾을거임
-
         where: {
           id: postId,
         },
         include: [
-          //데이터를 가져올때는 항상 완성해서 가져와야한다.
           {
-            model: User, //작성자
-            attributes: ["id", "nickname"],
+            model: User, //포스트 작성자
+            attributes: ["id", "nickname"], //포스트 작성자의 아이디와 닉네임을 가져다 쓰겠다
+            //
           },
           {
-            model: ProdPostImage, //이미지
+            model: ProdPostImage, //이미지를 가져다 쓰겠다
           },
           {
-            model: ProdPostComment, //댓글
+            model: ProdPostComment, //댓글을 가져다 쓰겠다.
             include: [
               {
-                model: User, //댓글 작성자
-                attributes: ["id"], //댓글 수만 표시하면 되니까
-                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+                model: User, //댓글 작성자 위의 유저와 다른 사람임
+                attributes: ["id", "nickname"],
               },
             ],
           },
         ],
       });
-      console.log(prodpost);
-      res.status(200).json(prodpost);
+      console.log(prodpost); //findOne의 결과를 콘솔 로그로 찍어보겠다
+      res.status(200).json(prodpost); //findOne의 결과를 성공 status를 보내고 json형식으로 프론트에 넘기겠다
     } else if (boardNum == 3 || boardNum == 4) {
       const powerpost = await PowerPost.findOne({
         where: {
           id: postId,
         },
         include: [
-          //데이터를 가져올때는 항상 완성해서 가져와야한다.
           {
             model: User, //작성자
             attributes: ["id", "nickname"],
@@ -215,8 +208,7 @@ router.get("/singlepost", async (req, res, next) => {
             include: [
               {
                 model: User, //댓글 작성자
-                attributes: ["id"], //댓글 수만 표시하면 되니까
-                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+                attributes: ["id", "nickname"],
               },
             ],
           },
@@ -243,8 +235,7 @@ router.get("/singlepost", async (req, res, next) => {
             include: [
               {
                 model: User, //댓글 작성자
-                attributes: ["id"], //댓글 수만 표시하면 되니까
-                //댓글들 정렬할때도 여기다가 order정렬을 하는게아니라
+                attributes: ["id", "nickname"],
               },
             ],
           },
@@ -259,9 +250,9 @@ router.get("/singlepost", async (req, res, next) => {
   }
 });
 
-//     <------ 물건빌려줘/빌려줄게 이미지 업로드 ------>
+//  <------ 이미지 업로드 ------>  //
 router.post(
-  "/prodImages",
+  "/images",
   isLoggedIn,
   upload.array("image"),
   async (req, res, next) => {
@@ -274,48 +265,21 @@ router.post(
   }
 );
 
-//     <------ 힘을 빌려줘/빌려줄게 이미지 업로드 ------>
-router.post(
-  "/powerImages",
-  isLoggedIn,
-  upload.array("image"),
-  async (req, res, next) => {
-    // POST /post/images
-    //array인 이유는 이미지를 여러장 올릴수도있으니까.  하나의 인풋태그에서 여러개올릴때는 array고 2개이상의 인풋에서 이미지 올릴때는 fields로 대체
-    //한장만 올리려면 array대신 single("image")
-    //텍스트만 올리려면 none(),
-    console.log(req.files); //업로드된 이미지 정보
-    res.json(req.files.map((v) => v.filename));
-  }
-);
-
-//     <------ 같이하자 이미지 업로드 ------>
-router.post(
-  "/togetherImages",
-  isLoggedIn,
-  upload.array("image"),
-  async (req, res, next) => {
-    // POST /post/images
-    //array인 이유는 이미지를 여러장 올릴수도있으니까.  하나의 인풋태그에서 여러개올릴때는 array고 2개이상의 인풋에서 이미지 올릴때는 fields로 대체
-    //한장만 올리려면 array대신 single("image")
-    //텍스트만 올리려면 none(),
-    console.log(req.files); //업로드된 이미지 정보
-    res.json(req.files.map((v) => v.filename));
-  }
-);
-
-// ======================   댓글 작성======================
+// <----댓글 작성 라우터---->
 router.post("/writeComment", isLoggedIn, async (req, res, next) => {
   const boardNum = req.body.boardNum;
   if (boardNum == 1 || boardNum == 2) {
     try {
       const post = await ProdPost.findOne({
+        //포스트가 존재하는지 찾아본다/없는 게시물에 댓글을 다는 이상한 행위를 차단
         where: { id: req.body.postId },
       });
       if (!post) {
+        //댓글을 요청한 게시물이 없다면 ..
         return res.status(403).send("존재하지 않는 게시물입니다.");
       }
       const comment = await ProdPostComment.create({
+        //포스트가 존재한다면 코멘트 테이블에 결과를 create
         content: req.body.content,
         PostId: req.body.postId,
         UserId: req.body.id,
@@ -391,37 +355,37 @@ router.post("/writeComment", isLoggedIn, async (req, res, next) => {
   }
 });
 
-// <----- 게시글 좋아요 ----->
-router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
-  // PATCH /post/1/like
-  try {
-    const post = await Post.findOne({ where: { id: req.params.postId } });
-    if (!post) {
-      return res.status(403).send("게시글이 존재하지 않습니다");
-    }
-    await post.addLikers(req.user.id);
-    res.json({ PostId: post.id, UserId: req.user.id });
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
+// // <----- 게시글 좋아요 ----->
+// router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
+//   // PATCH /post/1/like
+//   try {
+//     const post = await Post.findOne({ where: { id: req.params.postId } });
+//     if (!post) {
+//       return res.status(403).send("게시글이 존재하지 않습니다");
+//     }
+//     await post.addLikers(req.user.id);
+//     res.json({ PostId: post.id, UserId: req.user.id });
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
 
-// <----- 게시글 좋아요 취소 ----->
-router.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
-  // DELETE /post/1/like
-  try {
-    const post = await Post.findOne({ where: { id: req.params.postId } });
-    if (!post) {
-      return res.status(403).send("게시글이 존재하지 않습니다");
-    }
-    await post.removeLikers(req.user.id);
-    res.json({ PostId: post.id, UserId: req.user.id });
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
+// // <----- 게시글 좋아요 취소 ----->
+// router.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
+//   // DELETE /post/1/like
+//   try {
+//     const post = await Post.findOne({ where: { id: req.params.postId } });
+//     if (!post) {
+//       return res.status(403).send("게시글이 존재하지 않습니다");
+//     }
+//     await post.removeLikers(req.user.id);
+//     res.json({ PostId: post.id, UserId: req.user.id });
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
 
 // //        <----- 게시글 수정 ----->
 // route.patch("/edit", isLoggedIn, async (req, res, next) => {
@@ -441,96 +405,47 @@ router.delete("/:postId/like", isLoggedIn, async (req, res, next) => {
 //   }
 // });
 
-router.delete("/delete1", async (req, res, next) => {
-  const imgsrc = await ProdPostImage.findAndCountAll({
-    where: {
-      [Op.or]: [{ ProdPostId: 1 }, { ProdPostId: 2 }],
-    },
-  });
-});
-
 //       <----- 게시글 삭제 ----->
 router.delete("/delete", isLoggedIn, async (req, res, next) => {
-  // DELETE /post / ?
-  const boardNum = req.body.boardNum;
+  // DELETE /post /delete
+  const boardNum = req.query.boardNum;
+  console.log(boardNum);
   if (boardNum == 1 || boardNum == 2) {
-    //들어온 보드넘이 1혹은 2라면
     try {
-      const imgsrc = await ProdPostImage.findAll({
-        where: {
-          ProdPostId: req.body.postId,
-        },
-      });
-
       await ProdPost.destroy({
+        //
         where: {
-          id: req.body.postId, //게시글 id
-          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+          id: req.query.postId, //받아온 postId와 ProdPost의 id가 같은 튜플을 삭제시킨다.
+          UserId: req.query.id, //이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???이거바꿔야함???
         },
       });
-      await ProdPostComment.destroy({
-        where: {
-          ProdPostId: req.body.postId, //게시글 id
-          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
-        },
-      });
-      await ProdPostImage.destroy({
-        where: {
-          ProdPostId: req.body.postId, //게시글 id
-        },
-      });
-      // fs.unlink();
-      res.status(200).json.send("삭제 성공");
+      res.status(200).send("삭제 성공");
     } catch (error) {
       console.error(error);
       next(error);
     }
   } else if (boardNum == 3 || boardNum == 4) {
-    //들어온 보드넘이 1혹은 2라면
     try {
       await PowerPost.destroy({
         where: {
-          id: req.body.postId, //게시글 id
-          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+          id: req.query.postId,
+          UserId: req.query.id, //이거바꿔야함???이거바꿔야함???이거바꿔야함??? //이거바꿔야함???이거바꿔야함???이거바꿔야함??? //이거바꿔야함???이거바꿔야함???이거바꿔야함???
         },
       });
-      await PowerPostComment.destroy({
-        where: {
-          PowerPostId: req.body.postId, //게시글 id
-          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
-        },
-      });
-      await PowerPostImage.destroy({
-        where: {
-          PowerPostId: req.body.postId, //게시글 id
-        },
-      });
-      res.status(200).json.send("삭제 성공");
+      res.status(200).send("삭제 성공");
     } catch (error) {
       console.error(error);
       next(error);
     }
   } else if (boardNum == 5) {
-    //들어온 보드넘이 1혹은 2라면
     try {
       await TogetherPost.destroy({
         where: {
-          id: req.body.postId, //게시글 id
-          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
+          id: req.query.postId,
+          UserId: req.query.id, //이거바꿔야함???이거바꿔야함???이거바꿔야함??? //이거바꿔야함???이거바꿔야함???이거바꿔야함??? //이거바꿔야함???이거바꿔야함???이거바꿔야함???
         },
       });
-      await TogetherPostComment.destroy({
-        where: {
-          TogetherPostId: req.body.postId, //게시글 id
-          UserId: req.user.id, //그 게시글을 쓴 유저의 id  ~혹여나 다른사람이 삭제할때 url만바꿔서 요청보내면 다른사람글도 삭제가능하니까
-        },
-      });
-      await TogetherPostImage.destroy({
-        where: {
-          TogetherPostId: req.body.postId, //게시글 id
-        },
-      });
-      res.status(200).json.send("삭제 성공");
+      res.status(200).send("삭제 성공");
     } catch (error) {
       console.error(error);
       next(error);

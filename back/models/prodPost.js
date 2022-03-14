@@ -11,7 +11,7 @@ module.exports = class ProdPost extends Sequelize.Model {
         category: {
           //화면 오른쪽 공구,의류,전자기기 등의 카테고리 구분 // 글자로
           type: Sequelize.STRING(20),
-          allowNull: true,
+          allowNull: false,
         },
         title: {
           type: Sequelize.STRING(50),
@@ -19,11 +19,11 @@ module.exports = class ProdPost extends Sequelize.Model {
         },
         content: {
           type: Sequelize.STRING(500),
-          allowNull: false,
+          allowNull: true,
         },
         price: {
           type: Sequelize.INTEGER,
-          allowNull: true,
+          allowNull: false,
         },
         user_location: {
           type: Sequelize.STRING(100),
@@ -40,12 +40,18 @@ module.exports = class ProdPost extends Sequelize.Model {
     );
   }
   static associate(db) {
-    db.ProdPost.belongsTo(db.User); //이건 post의 작성자 //post.addUser(여기서는 s가 안붙어) hasMany나 belongsToMany는 s가 논리적으로 붙지
+    db.ProdPost.belongsTo(db.User); //Prod포스트는 유저에 포함되어 있다.
+    db.ProdPost.hasMany(db.Message);
     db.ProdPost.belongsToMany(db.User, { through: "Favorite", as: "Likers" }); //게시글 좋아요 누른 사람들
     //나중에 as 따라서 post.getLikers처럼 게시글 좋아요 누른 사람을 가져오게 된다.
     //post.addLikers, post.removeLikers등의 관계형 메서드가 생긴다.
     // add,get,set,remove -- 관계형 메서드
-    db.ProdPost.hasMany(db.ProdPostImage);
-    db.ProdPost.hasMany(db.ProdPostComment); //post.addProdPostComment
+    db.ProdPost.hasMany(db.ProdPostImage, {
+      onDelete: "CASCADE",
+    });
+    db.ProdPost.hasMany(db.ProdPostComment, {
+      onDelete: "CASCADE",
+    });
+    db.ProdPost.hasMany(db.Message);
   }
 };

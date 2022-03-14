@@ -11,7 +11,7 @@ module.exports = class PowerPost extends Sequelize.Model {
         category: {
           //화면 오른쪽 공구,의류,전자기기 등의 카테고리 구분 // 글자로
           type: Sequelize.STRING(20),
-          allowNull: true,
+          allowNull: false,
         },
         title: {
           type: Sequelize.STRING(50),
@@ -19,11 +19,11 @@ module.exports = class PowerPost extends Sequelize.Model {
         },
         content: {
           type: Sequelize.STRING(500),
-          allowNull: false,
+          allowNull: true,
         },
         price: {
           type: Sequelize.INTEGER,
-          allowNull: true,
+          allowNull: false,
         },
         user_location: {
           type: Sequelize.STRING(100),
@@ -45,7 +45,13 @@ module.exports = class PowerPost extends Sequelize.Model {
     //나중에 as 따라서 post.getLikers처럼 게시글 좋아요 누른 사람을 가져오게 된다.
     //post.addLikers, post.removeLikers등의 관계형 메서드가 생긴다.
     // add,get,set,remove -- 관계형 메서드
-    db.PowerPost.hasMany(db.PowerPostImage);
-    db.PowerPost.hasMany(db.PowerPostComment);
+    db.PowerPost.hasMany(db.PowerPostImage, {
+      onDelete: "CASCADE", //power포스트의 tuple이 삭제되면 powerpost의 id(key)를 foreignkey로 가지고 있는 다른 테이블의 튜플도
+      //같이 삭제된다
+    });
+    db.PowerPost.hasMany(db.PowerPostComment, {
+      onDelete: "CASCADE", //연관 삭제
+    });
+    db.PowerPost.hasMany(db.Message);
   }
 };

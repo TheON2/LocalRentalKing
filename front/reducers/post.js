@@ -2,6 +2,7 @@ import produce from 'immer';
 
 export const initialState = {
   mainPosts: [],
+  searchPosts: [],
   imagePaths: [],
   object_TagsData: ['전체', '공구',
     '의류',
@@ -16,7 +17,9 @@ export const initialState = {
   talent_TagsData: ['전체', '미술', '구충', '설치', '코칭', '촬영', '일손', '기타'],
   cooperate_tagsData: ['전체', '1+1', '배달', '공동구매', '기타'],
   play_tagsData: ['전체', '질문', '자유'],
-  local: null,
+  boardNum:null,
+  inputSearch:null,
+  select:null,
   selectedTag: null,
   category: null,
   searchResultId: null,
@@ -59,6 +62,15 @@ export const initialState = {
   addCommentDone: false,
   addCommentError: null,
 };
+
+export const UPDATE_SEARCH = 'UPDATE_SEARCH';
+export const UPDATE_BOARD = 'UPDATE_BOARD';
+
+export const UPDATE_CHANGE_TAG_REQUEST = 'UPDATE_CHANGE_TAG_REQUEST';
+
+export const LOAD_CHANGE_TAG_REQUEST = 'LOAD_CHANGE_TAG_REQUEST';
+export const LOAD_CHANGE_TAG_SUCCESS = 'LOAD_CHANGE_TAG_SUCCESS';
+export const LOAD_CHANGE_TAG_FAILURE = 'LOAD_CHANGE_TAG_FAILURE';
 
 export const SEND_DUMMYPOST_REQUEST = 'SEND_DUMMYPOST_REQUEST';
 export const SEND_DUMMYPOST_SUCCESS = 'SEND_DUMMYPOST_SUCCESS';
@@ -145,13 +157,38 @@ export const addComment = (data) => ({
 // (이전상태,액션) => 다음상태
 const reducer = (state = initialState, action) => produce(state, (draft) => {
   switch (action.type) {
+    case UPDATE_BOARD:
+      draft.boardNum = action.data;
+      draft.mainPosts.length = 0 ;
+      break;
+    case UPDATE_CHANGE_TAG_REQUEST:
+      draft.serchPosts = draft.mainPosts.filter((v) => v.category === action.data);
+      break;
+    case UPDATE_SEARCH:
+      draft.inputSearch = action.data.searchword;
+      draft.select = action.data.select;
+      break;
+    case LOAD_CHANGE_TAG_REQUEST:
+      draft.loadPostLoading = true;
+      draft.loadPostDone = false;
+      draft.loadPostError = null;
+      break;
+    case LOAD_CHANGE_TAG_SUCCESS:
+      draft.mainPosts = action.data; // 기존 배열 밀어버리고 새롭게 10개씩 넣는다.
+      draft.loadPostLoading = false;
+      draft.loadPostDone = true;
+      break;
+    case LOAD_CHANGE_TAG_FAILURE:
+      draft.loadPostError = action.error;
+      draft.loadPostLoading = false;
+      break;
     case LOAD_SEARCH_POSTS_REQUEST:
       draft.searchPostLoading = true;
       draft.searchPostDone = false;
       draft.searchPostError = null;
       break;
     case LOAD_SEARCH_POSTS_SUCCESS:
-      draft.mainPosts = draft.mainPosts.concat(action.data);
+      draft.mainPosts = action.data;
       draft.searchPostLoading = false;
       draft.searchPostDone = true;
       draft.hasMorePost = action.data.length === 10;
@@ -200,6 +237,7 @@ const reducer = (state = initialState, action) => produce(state, (draft) => {
       break;
     case UPDATE_TAG:
       draft.selectedTag = action.data;
+      draft.hasMorePost = true;
       break;
     case REMOVE_IMAGE:
       draft.imagePaths = draft.imagePaths.filter((v, i) => i !== action.data);
@@ -279,15 +317,21 @@ const reducer = (state = initialState, action) => produce(state, (draft) => {
     case LOAD_USER_POSTS_SUCCESS:
     case LOAD_HASHTAG_POSTS_SUCCESS:
     case LOAD_POST_SUCCESS:
-      // if(draft.mainPosts[0].post_category === action.data[0].post_category //카테고리 , 게시판넘버 , 지역이 일치할때
-      // && draft.mainPosts[0].post_boardNum === action.data[0].post_boardNum
-      // && draft.mainPosts[0].post_location === action.data[0].post_location) {
-      //   draft.mainPosts = draft.mainPosts.concat(action.data);
-      // }
-      // else {
-      //   draft.mainPosts = action.data;
-      // }
-      draft.mainPosts = draft.mainPosts.concat(action.data);
+      if (draft.mainPosts.length > 0) { // SSR로 처음에 들고오는 경우가 아닐때
+        if (draft.mainPosts[0].category !== action.data[0].category //카테고리 , 지역이 일치하지 않을때
+          || draft.mainPosts[0].location !== action.data[0].location) {
+          draft.mainPosts = action.data; // 기존 배열 밀어버리고 새롭게 10개씩 넣는다.
+          console.log('밀고 새로넣었음');
+          // draft.mainPosts = draft.mainPosts.concat(action.data);
+        } else {
+          console.log('쌓는중');
+          draft.mainPosts = draft.mainPosts.concat(action.data); // 같은속성의 게시물을 쌓고있는 경우
+        }
+      }
+      else {
+        console.log('SSR OR NEW 10 POSTS');
+        draft.mainPosts = draft.mainPosts.concat(action.data); // SSR로 처음에 들고올때
+      }
       draft.loadPostLoading = false;
       draft.loadPostDone = true;
       draft.hasMorePost = action.data.length === 10;

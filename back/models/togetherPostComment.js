@@ -18,7 +18,9 @@ module.exports = class TogetherPostComment extends Sequelize.Model {
     );
   }
   static associate(db) {
-    db.TogetherPostComment.belongsTo(db.TogetherPost);
-    db.TogetherPostComment.belongsTo(db.User); //comments 테이블의 로우를 불러올 때 연결된 users 테이블의 로우를 가져온다.
+    db.TogetherPostComment.belongsTo(db.TogetherPost, {
+      onDelete: "CASCADE",
+    });
+    db.TogetherPostComment.belongsTo(db.User);
   }
 };

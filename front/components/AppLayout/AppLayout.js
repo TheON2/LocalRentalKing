@@ -23,15 +23,16 @@ function AppLayout({ children }) {
   };
 
   const onSearch = useCallback(() => {
-    Router.push(`/hashtag/${searchInput}`);
+    Router.push(`/hashtag/${searchInput}`,undefined,{ shallow:true });
   }, [searchInput]);
 
   const onWrite = useCallback(() => {
-    Router.push('/write');
+    Router.push('/write',undefined,{ shallow:true });
   }, []);
 
   const onLogOut = useCallback(() => {
     dispatch(logoutRequestAction());
+    Router.push('/',undefined,{ shallow:true });
   }, []);
 
   return (

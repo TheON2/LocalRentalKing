@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Tag , Button } from 'antd';
 import {useDispatch, useSelector} from "react-redux";
-import {LOAD_POST_REQUEST, UPDATE_TAG} from "../reducers/post";
+import {LOAD_CHANGE_TAG_REQUEST, LOAD_POST_REQUEST, UPDATE_TAG} from "../reducers/post";
 
 function Tags({tagsData , boardNum}) {
 
@@ -17,9 +17,9 @@ function Tags({tagsData , boardNum}) {
     setSelectedTags([...nextSelectedTags]);
 
     dispatch({
-      type:LOAD_POST_REQUEST,
+      type:LOAD_CHANGE_TAG_REQUEST,
       data:nextSelectedTags[0], // 현재 선택한 태그명
-      boardNum:boardNum, // 현재 렌더링중인 게시판 고유번호
+      boardNum:boardNum,
     })
     dispatch({
       type: UPDATE_TAG,
