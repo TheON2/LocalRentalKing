@@ -29,6 +29,11 @@ module.exports = class PowerPost extends Sequelize.Model {
           type: Sequelize.STRING(100),
           allowNull: false,
         },
+        status: {
+          //거래상태
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
       },
       {
         modelName: "PowerPost",

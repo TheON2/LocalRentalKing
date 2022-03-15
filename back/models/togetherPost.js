@@ -33,6 +33,11 @@ module.exports = class TogetherPost extends Sequelize.Model {
           type: Sequelize.STRING(100),
           allowNull: false,
         },
+        status: {
+          //모집상태
+          type: Sequelize.INTEGER,
+          allowNull: false,
+        },
       },
       {
         modelName: "TogetherPost",

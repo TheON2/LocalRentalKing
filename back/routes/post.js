@@ -66,6 +66,7 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
         UserId: req.body.userid,
         user_nickname: req.body.nickname,
         user_location: req.body.location,
+        status: 0,
       });
       if (req.body.image) {
         //만약 글 작성시 이미지를 넣었다면
@@ -99,6 +100,7 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
         UserId: req.body.userid,
         user_nickname: req.body.nickname,
         user_location: req.body.location,
+        status: 0,
       });
       if (req.body.image) {
         if (Array.isArray(req.body.image)) {
@@ -131,6 +133,7 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
         UserId: req.body.userid,
         user_nickname: req.body.nickname,
         user_location: req.body.location,
+        status: 0,
       });
       if (req.body.image) {
         if (Array.isArray(req.body.image)) {
@@ -387,23 +390,115 @@ router.post("/writeComment", isLoggedIn, async (req, res, next) => {
 //   }
 // });
 
-// //        <----- 게시글 수정 ----->
-// route.patch("/edit", isLoggedIn, async (req, res, next) => {
-//   try {
-//     await User.update(
-//       {
-//         nickname: req.body.nickname, //프론트와 상의해서 넘겨받을 데이터 설정하기
-//       },
-//       {
-//         where: { id: req.user.id, UserId: req.user.id, },
-//       }
-//     );
-//     res.status(200).json({ nickname: req.body.nickname });
-//   } catch (error) {
-//     console.error(error);
-//     next(error);
-//   }
-// });
+//        <----- 게시글 수정 ----->
+router.patch("/edit", upload.none(), async (req, res, next) => {
+  const boardNum = req.body.boardNum;
+  const userid = req.body.userid;
+  const postid = req.body.id;
+  const rcategory = req.body.category;
+  const rtitle = req.body.title;
+  const rcontent = req.body.content;
+  const rprice = req.body.price;
+  const rlocation = req.body.location;
+  const roriginalPrice = req.body.originalPrice;
+  const rsharedPrice = req.body.sharedPrice;
+  try {
+    if (boardNum == 1 || boardNum == 2) {
+      await ProdPost.update(
+        {
+          category: rcategory,
+          title: rtitle,
+          content: rcontent,
+          price: rprice,
+          user_location: rlocation,
+        },
+        {
+          where: { id: postid, UserId: userid }, //글쓴이와 게시글의 id가 모두 일치할때만 수정 가능
+        }
+      );
+
+      const post = await ProdPost.findOne({ where: { id: postid } });
+      if (req.body.image) {
+        await ProdPostImage.destroy({
+          where: { id: postid },
+        });
+        if (Array.isArray(req.body.image)) {
+          //이미지가 여러개
+
+          const images = await Promise.all(
+            req.body.image.map((image) => ProdPostImage.create({ src: image }))
+          );
+          await post.addProdPostImages(images);
+        } else {
+          //이미지가 하나
+          const image = await ProdPostImage.create({ src: req.body.image });
+          await post.addProdPostImages(image);
+        }
+      }
+      res.status(200).json("게시글 수정 완료");
+    } else if (boardNum == 3 || boardNum == 4) {
+      await PowerPost.update(
+        {
+          category: rcategory,
+          title: rtitle,
+          content: rcontent,
+          price: rprice,
+          user_location: rlocation,
+        },
+        {
+          where: { id: postid, UserId: userid },
+        }
+      );
+      if (req.body.image) {
+        if (Array.isArray(req.body.image)) {
+          //이미지 여러개
+          const images = await Promise.all(
+            req.body.image.map((image) => PowerPostImage.create({ src: image }))
+          );
+          await powerPost.addPowerPostImages(images);
+        } else {
+          //이미지 하나
+          const image = await PowerPostImage.create({ src: req.body.image });
+          await powerPost.addPowerPostImages(image);
+        }
+      }
+      res.status(200).json("게시글 수정 완료");
+    } else if (boardNum == 5) {
+      await TogetherPost.update(
+        {
+          category: rcategory,
+          title: rtitle,
+          content: rcontent,
+          user_location: rlocation,
+          originalPrice: roriginalPrice,
+          sharedPrice: rsharedPrice,
+        },
+        {
+          where: { id: postid, UserId: userid },
+        }
+      );
+      if (req.body.image) {
+        if (Array.isArray(req.body.image)) {
+          //이미지 여러개
+          const images = await Promise.all(
+            req.body.image.map((image) =>
+              TogetherPostImage.create({ src: image })
+            )
+          );
+          await togetherPost.addTogetherPosTImages(images);
+        } else {
+          //이미지 하나
+          const image = await TogetherPostImage.create({ src: req.body.image });
+          await togetherPost.addPTogetherPostImages(image);
+        }
+      }
+      res.status(200).json("게시글 수정 완료");
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 //       <----- 게시글 삭제 ----->
 router.delete("/delete", isLoggedIn, async (req, res, next) => {
@@ -450,6 +545,51 @@ router.delete("/delete", isLoggedIn, async (req, res, next) => {
       console.error(error);
       next(error);
     }
+  }
+});
+
+//       <----- 게시글 거래상태 변경 ----->
+router.patch("/status", isLoggedIn, async (req, res, next) => {
+  const boardNum = req.body.boardNum;
+  const userid = req.body.userid;
+  const postid = req.body.id;
+  const rstatus = req.body.status;
+  console.log(boardNum);
+  try {
+    if (boardNum == 1 || boardNum == 2) {
+      await ProdPost.update(
+        {
+          status: rstatus,
+        },
+        {
+          where: { id: postid, UserId: userid }, //글쓴이와 게시글의 id가 모두 일치할때만 수정 가능
+        }
+      );
+      res.status(200).json("거래상태 변경 완료");
+    } else if (boardNum == 3 || boardNum == 4) {
+      await PowerPost.update(
+        {
+          status: rstatus,
+        },
+        {
+          where: { id: postid, UserId: userid },
+        }
+      );
+      res.status(200).json("거래상태 변경 완료");
+    } else if (boardNum == 5) {
+      await TogetherPost.update(
+        {
+          status: rstatus,
+        },
+        {
+          where: { id: postid, UserId: userid },
+        }
+      );
+      res.status(200).json("거래상태 변경 완료");
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 

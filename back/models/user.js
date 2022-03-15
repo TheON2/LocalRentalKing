@@ -8,7 +8,7 @@ module.exports = class User extends Sequelize.Model {
       //시퀄라이즈는 알아서 id를 기본 키로 연결하므로, id 컬럼은 따로 적어줄 필요는 없다.
       {
         email: {
-          type: Sequelize.STRING(100),
+          type: Sequelize.STRING(50),
           allowNull: false,
           unique: true,
         },
@@ -21,7 +21,7 @@ module.exports = class User extends Sequelize.Model {
           allowNull: false,
         },
         location: {
-          type: Sequelize.STRING(100),
+          type: Sequelize.STRING(50),
           allowNull: false,
         },
         greeting: {
