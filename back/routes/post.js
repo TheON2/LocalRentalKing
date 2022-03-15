@@ -143,7 +143,7 @@ router.post("/write", isLoggedIn, upload.none(), async (req, res, next) => {
               TogetherPostImage.create({ src: image })
             )
           );
-          await togetherPost.addTogetherPosTImages(images);
+          await togetherPost.addTogetherPostImages(images);
         } else {
           //이미지 하나
           const image = await TogetherPostImage.create({ src: req.body.image });
@@ -437,9 +437,9 @@ router.patch("/edit", upload.none(), async (req, res, next) => {
       }
       res.status(200).json("게시글 수정 완료");
     } else if (boardNum == 3 || boardNum == 4) {
+      console.log("3,4번 진입");
       await PowerPost.update(
         {
-          category: rcategory,
           title: rtitle,
           content: rcontent,
           price: rprice,
@@ -449,24 +449,27 @@ router.patch("/edit", upload.none(), async (req, res, next) => {
           where: { id: postid, UserId: userid },
         }
       );
+      const post = await PowerPost.findOne({ where: { id: postid } });
       if (req.body.image) {
+        await PowerPostImage.destroy({
+          where: { PowerPostId: postid },
+        });
         if (Array.isArray(req.body.image)) {
           //이미지 여러개
           const images = await Promise.all(
             req.body.image.map((image) => PowerPostImage.create({ src: image }))
           );
-          await powerPost.addPowerPostImages(images);
+          await post.addPowerPostImages(images);
         } else {
           //이미지 하나
           const image = await PowerPostImage.create({ src: req.body.image });
-          await powerPost.addPowerPostImages(image);
+          await post.addPowerPostImages(image);
         }
       }
       res.status(200).json("게시글 수정 완료");
     } else if (boardNum == 5) {
       await TogetherPost.update(
         {
-          category: rcategory,
           title: rtitle,
           content: rcontent,
           user_location: rlocation,
@@ -477,7 +480,11 @@ router.patch("/edit", upload.none(), async (req, res, next) => {
           where: { id: postid, UserId: userid },
         }
       );
+      const post = await TogetherPost.findOne({ where: { id: postid } });
       if (req.body.image) {
+        await TogetherPostImage.destroy({
+          where: { TogetherPostId: postid },
+        });
         if (Array.isArray(req.body.image)) {
           //이미지 여러개
           const images = await Promise.all(
@@ -485,11 +492,11 @@ router.patch("/edit", upload.none(), async (req, res, next) => {
               TogetherPostImage.create({ src: image })
             )
           );
-          await TogetherPost.addTogetherPosTImages(images);
+          await post.addTogetherPosTImages(images);
         } else {
           //이미지 하나
           const image = await TogetherPostImage.create({ src: req.body.image });
-          await TogetherPost.addPTogetherPostImages(image);
+          await post.addPTogetherPostImages(image);
         }
       }
       res.status(200).json("게시글 수정 완료");

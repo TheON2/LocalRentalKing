@@ -1,24 +1,48 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import AppLayout from "../components/AppLayout/AppLayout";
 import { Button, Form, Input, Select } from "antd";
 import "antd/dist/antd.css";
 import {
+  MODIFY_POST_REQUEST,
   REMOVE_IMAGE,
-  SEND_DUMMYPOST_REQUEST,
   UPLOAD_IMAGES_REQUEST,
-} from "../reducers/post";
-import Router from "next/router";
-import useInput from "../hooks/useInput";
-import Layout from "../components/Layout";
+} from "../../reducers/post";
+import Router, { useRouter } from "next/router";
+import useInput from "../../hooks/useInput";
+import Layout from "../../components/Layout";
+import { LOAD_SPOST_REQUEST } from "../../reducers/post";
+import styled from "styled-components";
+import a1 from "../../components/광고1.jpeg";
+import a2 from "../../components/광고2.jpg";
+import a3 from "../../components/광고3.jpg";
+import a4 from "../../components/광고4.jpeg";
+import a5 from "../../components/광고5.jpg";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+const PostCarDiv2 = styled.div`
+  width: 100%;
+  display: flex;
+  // background:red;
+  flex-wrap: wrap;
+  justify-content: center;
+`;
+const AdvertisementDiv = styled.div`
+  width: 100%;
+  height: 297px;
+  // background:blue;
+  position: relative;
+`;
 
 const { TextArea } = Input;
 const { Option } = Select;
 
-function Write() {
+function Modify() {
   const dispatch = useDispatch();
+  const router = useRouter();
+  const { id } = router.query; // [tag].js 파일 명의 [] 부분이 들어간다
   const { me } = useSelector((state) => state.user);
   const {
+    modifyPostDone,
+    singlePost,
     object_TagsData,
     talent_TagsData,
     cooperate_tagsData,
@@ -31,6 +55,48 @@ function Write() {
   const [price, onPrice, setPrice] = useInput(0);
   const [originalPrice, onOriginalPrice, setOriginalPrice] = useInput(0);
   const [sharedPrice, onSharedPrice, setSharedPrice] = useInput(0);
+
+  const advImg = [
+    {
+      src: a1,
+    },
+    {
+      src: a2,
+    },
+    {
+      src: a3,
+    },
+    {
+      src: a4,
+    },
+    {
+      src: a5,
+    },
+  ];
+
+  const [i, Seti] = useState(0);
+  const [imgSrc, SetImgSrc] = useState(a1);
+  const RchangeImg = () => {
+    if (i < 5) {
+      Seti(i + 1);
+      SetImgSrc(advImg[i].src);
+    } else if (i === 5) {
+      Seti(0);
+    }
+  };
+  const LchangImg = () => {
+    if (i > 0) {
+      Seti(i - 1);
+      SetImgSrc(advImg[i - 1].src);
+      console.log(imgSrc);
+    }
+  };
+
+  const idAndBoardNum = id.split("*");
+  const postId = idAndBoardNum[0];
+  const postBoardNum = idAndBoardNum[1];
+  const [postId2, setPostId] = useState(postId);
+  const [postBoardNum2, setPostBoardNum] = useState(postBoardNum);
 
   const provinceData = [
     "물건빌려줘",
@@ -55,15 +121,25 @@ function Write() {
   }, [me && me.id]);
 
   useEffect(() => {
-    if (addPostDone) {
+    if (modifyPostDone) {
       Router.push("/objectreceive", undefined, { shallow: true });
     }
-  }, [addPostDone]);
+  }, [modifyPostDone]);
+
+  // useEffect(()=>{
+  //   dispatch({
+  //     type:LOAD_SPOST_REQUEST,
+  //     postId:postId,
+  //     postBoardNum:postBoardNum,
+  //   });
+  // },[postId,postBoardNum]);
 
   useEffect(() => {
-    setPrice(null);
-    setOriginalPrice(null);
-    setSharedPrice(null);
+    setPrice(singlePost.price);
+    setOriginalPrice(singlePost.originalPrice);
+    setSharedPrice(singlePost.sharedPrice);
+    setTitle(singlePost.title);
+    setContent(singlePost.content);
   }, []);
 
   if (!me) {
@@ -71,11 +147,6 @@ function Write() {
   }
 
   const [form] = Form.useForm();
-
-  const [board, setBoard] = useState(provinceData[0]);
-  const onBoard = useCallback((value) => {
-    setBoard(value);
-  }, []);
 
   const [category, setCategory] = useState(tags1[0]);
   const onCategory = useCallback((value) => {
@@ -115,31 +186,25 @@ function Write() {
     if (!sharedPrice) setSharedPrice(0);
 
     const formData = new FormData();
-    // imagePaths.forEach((i) => {
-    //   formData.append('image', i);
-    // });
+    imagePaths.forEach((i) => {
+      formData.append("image", i);
+    });
     formData.append("content", content);
     formData.append("userid", me.id);
+    formData.append("id", singlePost.id);
     formData.append("location", me.location);
     formData.append("nickname", me.nickname);
-    formData.append("category", category);
     formData.append("title", title);
     formData.append("originalPrice", originalPrice);
     formData.append("sharedPrice", sharedPrice);
     formData.append("price", price);
-
-    if (board == provinceData[0]) formData.append("boardNum", 1);
-    else if (board == provinceData[1]) formData.append("boardNum", 2);
-    else if (board == provinceData[2]) formData.append("boardNum", 3);
-    else if (board == provinceData[3]) formData.append("boardNum", 4);
-    else if (board == provinceData[4]) formData.append("boardNum", 5);
-    else if (board == provinceData[5]) formData.append("boardNum", 6);
+    formData.append("boardNum", singlePost.boardNum);
 
     return dispatch({
-      type: SEND_DUMMYPOST_REQUEST,
+      type: MODIFY_POST_REQUEST,
       data: formData,
     });
-  }, [content, imagePaths]);
+  }, [content, imagePaths, title, price, originalPrice, sharedPrice]);
 
   const onCancel = useCallback(() => {
     Router.push("/objectreceive", undefined, { shallow: true });
@@ -166,7 +231,7 @@ function Write() {
               value={title}
               onChange={onTitle}
             />{" "}
-            {board === provinceData[0] && (
+            {singlePost.boardNum === 1 && (
               <Input
                 style={{ width: "30%" }}
                 placeholder="렌탈비를 입력해주세요."
@@ -174,7 +239,7 @@ function Write() {
                 onChange={onPrice}
               />
             )}
-            {board === provinceData[1] && (
+            {singlePost.boardNum === 2 && (
               <Input
                 style={{ width: "30%" }}
                 placeholder="렌탈비를 입력해주세요."
@@ -182,7 +247,7 @@ function Write() {
                 onChange={onPrice}
               />
             )}
-            {board === provinceData[2] && (
+            {singlePost.boardNum === 3 && (
               <Input
                 style={{ width: "30%" }}
                 placeholder="렌탈비를 입력해주세요."
@@ -190,7 +255,7 @@ function Write() {
                 onChange={onPrice}
               />
             )}
-            {board === provinceData[3] && (
+            {singlePost.boardNum === 4 && (
               <Input
                 style={{ width: "30%" }}
                 placeholder="렌탈비를 입력해주세요."
@@ -198,7 +263,7 @@ function Write() {
                 onChange={onPrice}
               />
             )}
-            {board === provinceData[4] && category == tags5[0] && (
+            {singlePost.boardNum === 5 && singlePost.category == tags5[0] && (
               <Input.Group>
                 <Input
                   style={{ width: "30%" }}
@@ -214,7 +279,7 @@ function Write() {
                 />
               </Input.Group>
             )}
-            {board === provinceData[4] && category == tags5[1] && (
+            {singlePost.boardNum === 5 && singlePost.category == tags5[1] && (
               <Input.Group>
                 <Input
                   style={{ width: "30%" }}
@@ -230,7 +295,7 @@ function Write() {
                 />
               </Input.Group>
             )}
-            {board === provinceData[4] && category == tags5[2] && (
+            {singlePost.boardNum === 5 && singlePost.category == tags5[2] && (
               <Input.Group>
                 <Input
                   style={{ width: "30%" }}
@@ -246,7 +311,7 @@ function Write() {
                 />
               </Input.Group>
             )}
-            {board === provinceData[4] && category == tags5[3] && (
+            {singlePost.boardNum === 5 && singlePost.category == tags5[3] && (
               <Input
                 style={{ width: "30%" }}
                 placeholder="렌탈비를 입력해주세요."
@@ -255,84 +320,6 @@ function Write() {
               />
             )}
           </Input.Group>
-        </Form.Item>
-
-        <Form.Item>
-          <Select
-            defaultValue={provinceData}
-            style={{ width: 120 }}
-            onChange={onBoard}
-          >
-            {provinceData.map((province) => (
-              <Option key={province}>{province}</Option>
-            ))}
-          </Select>
-          {board === provinceData[0] && (
-            <Select
-              style={{ width: 120 }}
-              defaultValue={tags1[0]}
-              onChange={onCategory}
-            >
-              {tags1.map((tag) => (
-                <Option value={tag}>{tag}</Option>
-              ))}
-            </Select>
-          )}
-          {board === provinceData[1] && (
-            <Select
-              style={{ width: 120 }}
-              defaultValue={tags2[0]}
-              onChange={onCategory}
-            >
-              {tags2.map((city) => (
-                <Option value={city}>{city}</Option>
-              ))}
-            </Select>
-          )}
-          {board === provinceData[2] && (
-            <Select
-              style={{ width: 120 }}
-              defaultValue={tags3[0]}
-              onChange={onCategory}
-            >
-              {tags3.map((city) => (
-                <Option value={city}>{city}</Option>
-              ))}
-            </Select>
-          )}
-          {board === provinceData[3] && (
-            <Select
-              style={{ width: 120 }}
-              defaultValue={tags4[0]}
-              onChange={onCategory}
-            >
-              {tags4.map((city) => (
-                <Option value={city}>{city}</Option>
-              ))}
-            </Select>
-          )}
-          {board === provinceData[4] && (
-            <Select
-              style={{ width: 120 }}
-              defaultValue={null}
-              onChange={onCategory}
-            >
-              {tags5.map((city) => (
-                <Option value={city}>{city}</Option>
-              ))}
-            </Select>
-          )}
-          {board === provinceData[5] && (
-            <Select
-              style={{ width: 120 }}
-              defaultValue={tags6[0]}
-              onChange={onCategory}
-            >
-              {tags6.map((city) => (
-                <Option value={city}>{city}</Option>
-              ))}
-            </Select>
-          )}
         </Form.Item>
         <Form.Item>
           <div>
@@ -370,7 +357,6 @@ function Write() {
             onChange={onContent}
           />
         </Form.Item>
-
         <Form.Item style={{ textAlign: "center" }}>
           <Button type="primary" htmlType="submit">
             등록
@@ -384,4 +370,4 @@ function Write() {
   );
 }
 
-export default Write;
+export default Modify;

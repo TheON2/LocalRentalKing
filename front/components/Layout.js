@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import styled, {createGlobalStyle} from 'styled-components'
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import styled, { createGlobalStyle } from "styled-components";
 import {
   UserOutlined,
   MailOutlined,
@@ -9,19 +9,22 @@ import {
   CloseOutlined,
   DownOutlined,
   AimOutlined,
-} from '@ant-design/icons';
-import {MenuItems} from './MenuItems';
-import {Menu, Dropdown, Row, Col ,Input} from 'antd';
-import logo from './logo2.png';
-import Link from 'next/link';
-import Navbar from 'react-bootstrap/Navbar';
-import Button from 'react-bootstrap/Button';
+  EyeOutlined,
+  LeftOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
+import { MenuItems } from "./MenuItems";
+import { Menu, Dropdown, Row, Col, Input } from "antd";
+import logo from "./logo2.png";
+import Link from "next/link";
+import Navbar from "react-bootstrap/Navbar";
+import Button from "react-bootstrap/Button";
 import Router from "next/router";
-import {logoutRequestAction, UPDATE_LOCAL} from "../reducers/user";
-import {useDispatch, useSelector} from "react-redux";
+import { logoutRequestAction, UPDATE_LOCAL } from "../reducers/user";
+import { useDispatch, useSelector } from "react-redux";
 import useInput from "../hooks/useInput";
 import SearchLocation from "./SearchLocation";
-import {UPDATE_SEARCH} from "../reducers/post";
+import { UPDATE_SEARCH } from "../reducers/post";
 
 const Topbar = styled.div`
   padding: 1%;
@@ -31,7 +34,7 @@ const Topbar = styled.div`
   // background: red;
   border-bottom: solid #eeeeee;
   display: flex;
-  justify-content: center;;
+  justify-content: center;
   background: RGB(255, 255, 255);
   padding: 0 35px;
 `;
@@ -115,7 +118,6 @@ const Select = styled.input`
   border: none;
   float: left;
   // padding-left:80px;
-
 `;
 const ProfileDiv = styled.div`
   width: 400px;
@@ -142,12 +144,11 @@ const NavMenu = styled.ul`
   position: absolute;
   // top: 80px;
   // left:-100%;
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 `;
 const NavActive = styled.ul`
   position: absolute;
   z-index: 1;
-
 `;
 const MenuLi = styled.li`
   text-align: center;
@@ -160,7 +161,6 @@ const MenuLi = styled.li`
     transform: scale(1.3, 1.3);
   }
 
-
   a {
     color: black;
   }
@@ -168,7 +168,6 @@ const MenuLi = styled.li`
   a:hover {
     color: black;
   }
-
 `;
 const MenuDiv = styled.div`
   width: 200px;
@@ -190,113 +189,139 @@ const MenuA = styled.div`
 `;
 const PlaceDiv = styled.div`
   position: fixed;
-  width: 150px;
-  // background:red;
+  width: 130px;
   height: 30px;
-  top: 200px;
-  right:180px;
-  // left:200px;
+  bottom: 380px;
+  right: 160px;
   text-align: center;
   font-weight: 600;
   font-size: 20px;
-  // :hover {
-  //   transform: scale(1.3, 1.3);
-  // }
-  justify-content:left;
+  justify-content: left;
   display: flex;
   flex-wrap: wrap;
 `;
 const PostDiv = styled.div`
-  width:100%;
+  width: 100%;
+  position: relative;
   // background:blue;
+  ant-card-crid:hover {
+    padding-top: 100px;
+  }
 `;
-const LocalDiv = styled.div`
-    
+const LocalDiv = styled.div``;
+
+const RecentView = styled.div`
+  width: 90px;
+  text-align: center;
+  height: 200px;
+  position: fixed;
+  top: 230px;
+  right: 190px;
+  border: solid #eeeeee;
+  border-botton: none;
+  color: #d4d4d4;
+  border-radius: 4px;
 `;
 
-const C = styled.div`
-  width:120px;
-`;
-
-function Layout({children}) {
+function Layout({ children }) {
   const dispatch = useDispatch();
-  const {me, location} = useSelector((state) => state.user);
+  const { me, location } = useSelector((state) => state.user);
   const [isOpen, setMenu] = useState(false);
   const [profile, SetProfile] = useState(false);
   const [place, SetPlace] = useState(false);
   const [select, setSelect] = useState("글제목");
-  const [searchword, onSearchWord,setSearchWord] = useInput("");
+  const [searchword, onSearchWord, setSearchWord] = useInput("");
+  const [rcView, SetRcview] = useState(false);
 
   const menu = (
     <Menu>
       <Menu.Item key="0">
-        <a onClick={() => {
-          setSelect("글제목")
-        }}>글제목</a>
+        <a
+          onClick={() => {
+            setSelect("글제목");
+          }}
+        >
+          글제목
+        </a>
       </Menu.Item>
       <Menu.Item key="1">
-        <a onClick={() => {
-          setSelect("글내용")
-        }}>글내용</a>
+        <a
+          onClick={() => {
+            setSelect("글내용");
+          }}
+        >
+          글내용
+        </a>
       </Menu.Item>
     </Menu>
-  )
+  );
+
+  useEffect(() => {
+    dispatch({
+      type: UPDATE_LOCAL,
+      data: me.location,
+    });
+  }, [me]);
 
   const PlaceClick = () => {
-    if(place == false){
+    if (place == false) {
       SetPlace(true);
       console.log(place);
     }
-    if(place == true){
+    if (place == true) {
       SetPlace(false);
     }
-  }
+  };
 
   const toggleMenu = () => {
     setMenu(!isOpen);
-  }
+  };
 
   const goProfile = () => {
     SetProfile(true);
     console.log(profile);
-    Router.push('/profile',undefined,{ shallow:true });
-  }
+    Router.push("/profile", undefined, { shallow: true });
+  };
 
   const onWrite = useCallback(() => {
-    Router.push('/write',undefined,{ shallow:true });
+    Router.push("/write", undefined, { shallow: true });
   }, []);
 
   const onLogIn = useCallback(() => {
-    Router.push('/loginpage',undefined,{ shallow:true });
+    Router.push("/loginpage", undefined, { shallow: true });
+  }, []);
+
+  const onTalk = useCallback(() => {
+    Router.push("/modify", undefined, { shallow: true });
   }, []);
 
   const onLogOut = useCallback(() => {
     dispatch(logoutRequestAction());
-    Router.push('/', undefined, { shallow: true });
+    Router.push("/objectreceive", undefined, { shallow: true });
   }, []);
 
   const onSearching = useCallback(() => {
-    dispatch({
-      type:UPDATE_SEARCH,
-      data:{select:select, searchword:searchword,}
-    });
-    Router.push(`/search/${select}*${searchword}`, null, { shallow: true });
-  }, [select,searchword]);
+    // dispatch({
+    //   type:UPDATE_SEARCH,
+    //   data:{select:select, searchword:searchword,}
+    // });
+    Router.replace(`/search/${select}*${searchword}`);
+  }, [select, searchword]);
 
   return (
-    <div style={{width: "100%"}}>
-      <div style={{position: "relative", width: "100%"}}>
-        <GlobalStyle/>
+    <div style={{ width: "100%" }}>
+      <div style={{ position: "relative", width: "100%" }}>
+        <GlobalStyle />
         <div>
           <Topbar>
             <TopDiv>
-              {!me ?
-                (<div onClick={onLogIn}>로그인/회원가입</div>) :
-                (<div onClick={onLogOut}>로그아웃</div>)}
-              <Link href='/profile'>
-              <div style={{paddingLeft: "20px"}}>
-                내 프로필
-              </div>
+              {!me ? (
+                <div onClick={onLogIn}>로그인/회원가입</div>
+              ) : (
+                <div onClick={onLogOut}>로그아웃</div>
+              )}
+              <Link href="/profile">
+                <div style={{ paddingLeft: "20px" }}>내 프로필</div>
               </Link>
             </TopDiv>
           </Topbar>
@@ -304,104 +329,156 @@ function Layout({children}) {
             <NavBarDiv>
               <MenuDiv>
                 <LogoDiv>
-                    <Link href='/'>
+                  <Link href="/objectreceive">
                     <img
                       alt=""
                       src={logo}
                       width="245px;"
                       height="45px"
                       className="d-inline-block align-top"
-                      style={{paddingTop: "10px"}}
+                      style={{ paddingTop: "10px" }}
                     />
-                    </Link>
+                  </Link>
                 </LogoDiv>
-                <MenuA style={{paddingBottom: "20px"}}>
-                  {!isOpen ?
-                    <MenuOutlined style={{fontSize: "20px"}} onClick={toggleMenu}/>
-                    :
-                    <CloseOutlined style={{fontSize: "20px"}} onClick={toggleMenu}/>
-                  }
-                  {isOpen ?
+                <MenuA style={{ paddingBottom: "20px" }}>
+                  {!isOpen ? (
+                    <MenuOutlined
+                      style={{ fontSize: "20px" }}
+                      onClick={toggleMenu}
+                    />
+                  ) : (
+                    <CloseOutlined
+                      style={{ fontSize: "20px" }}
+                      onClick={toggleMenu}
+                    />
+                  )}
+                  {isOpen ? (
                     <NavActive>
                       {MenuItems.map((item, index) => {
                         return (
                           <>
-                            {index === 0 &&
-                            <Link href="/objectrecieve"><MenuLi key={"a"}><a>{item.title}</a></MenuLi></Link>}
-                            {index === 1 &&
-                            <Link href="/objectsend"><MenuLi key={"b"}><a>{item.title}</a></MenuLi></Link>}
-                            {index === 2 &&
-                            <Link href="/talentrecieve"><MenuLi key={"c"}><a>{item.title}</a></MenuLi></Link>}
-                            {index === 3 &&
-                            <Link href="/talentsend"><MenuLi key={"d"}><a>{item.title}</a></MenuLi></Link>}
-                            {index === 4 &&
-                            <Link href="/cooperate"><MenuLi key={"e"}><a>{item.title}</a></MenuLi></Link>}
-                            {index === 5 &&
-                            <Link href="/playground"><MenuLi key={"f"}><a>{item.title}</a></MenuLi></Link>}
+                            {index === 0 && (
+                              <Link href="/objectreceive">
+                                <MenuLi key={"a"}>
+                                  <a>{item.title}</a>
+                                </MenuLi>
+                              </Link>
+                            )}
+                            {index === 1 && (
+                              <Link href="/objectsend">
+                                <MenuLi key={"b"}>
+                                  <a>{item.title}</a>
+                                </MenuLi>
+                              </Link>
+                            )}
+                            {index === 2 && (
+                              <Link href="/talentreceive">
+                                <MenuLi key={"c"}>
+                                  <a>{item.title}</a>
+                                </MenuLi>
+                              </Link>
+                            )}
+                            {index === 3 && (
+                              <Link href="/talentsend">
+                                <MenuLi key={"d"}>
+                                  <a>{item.title}</a>
+                                </MenuLi>
+                              </Link>
+                            )}
+                            {index === 4 && (
+                              <Link href="/cooperate">
+                                <MenuLi key={"e"}>
+                                  <a>{item.title}</a>
+                                </MenuLi>
+                              </Link>
+                            )}
+                            {index === 5 && (
+                              <Link href="/playground">
+                                <MenuLi key={"f"}>
+                                  <a>{item.title}</a>
+                                </MenuLi>
+                              </Link>
+                            )}
                           </>
-                        )
+                        );
                       })}
-                    </NavActive> : <NavMenu/>
-                  }
+                    </NavActive>
+                  ) : (
+                    <NavMenu />
+                  )}
                 </MenuA>
               </MenuDiv>
-              <div style={{paddingLeft: "160px"}}>
+              <div style={{ paddingLeft: "160px" }}>
                 <SelcectDiv>
                   <SelectDropD>
-                    <Dropdown overlay={menu} trigger={['click']}>
-                      <a className="ant-dropdown-link" >
-                        {select} <DownOutlined/>
+                    <Dropdown overlay={menu} trigger={["click"]}>
+                      <a className="ant-dropdown-link">
+                        {select} <DownOutlined />
                       </a>
                     </Dropdown>
                   </SelectDropD>
-                  <Select placeholder={"지역, 상품명 입력"} value={searchword} onChange={onSearchWord}/>
-                  <div style={{paddingTop: "3px", paddingLeft: "115px"}}>
-                    <SearchOutlined onClick={onSearching}/>
+                  <Select
+                    placeholder={"지역, 상품명 입력"}
+                    value={searchword}
+                    onChange={onSearchWord}
+                  />
+                  <div style={{ paddingTop: "3px", paddingLeft: "115px" }}>
+                    <SearchOutlined onClick={onSearching} />
                   </div>
                 </SelcectDiv>
               </div>
               <ProfileDiv>
                 <UserDiv onClick={goProfile}>
-                  <UserOutlined/> 내프로필
+                  <UserOutlined /> 내프로필
                 </UserDiv>
-                <UserDiv>
-                  <MailOutlined/> 알림톡
+                <UserDiv onClick={onTalk}>
+                  <MailOutlined /> 알림톡
                 </UserDiv>
                 <UserDiv onClick={onWrite}>
-                  <FormOutlined/> 글 쓰기
+                  <FormOutlined /> 글 쓰기
                 </UserDiv>
               </ProfileDiv>
             </NavBarDiv>
           </NavBar>
         </div>
         <PostDiv>
-          <div style={{marginTop: 0, zIndex: 5 , width: '100%'}}>
+          <div style={{ marginTop: 0, zIndex: 5, width: "100%" }}>
             <Row gutter={8}>
-              <Col xs={7} md={6}/>
+              <Col xs={7} md={6} />
               <Col xs={13} md={13}>
                 {children}
               </Col>
-              <Col xs={6} md={5}/>
+              <Col xs={6} md={5} />
             </Row>
           </div>
+          <PlaceDiv onClick={PlaceClick}>
+            <AimOutlined style={{ paddingRight: "10px", paddingTop: "5px" }} />
+            {!place ? <span>동네 설정</span> : <span>재설정</span>}
+            {place ? (
+              <div>
+                <SearchLocation />
+              </div>
+            ) : (
+              <LocalDiv>{location}</LocalDiv>
+            )}
+          </PlaceDiv>
+          <RecentView>
+            <div style={{ borderBottom: "solid #e8e8e8" }}>최근본상품</div>
+            {!rcView ? (
+              <div style={{ paddingTop: "30px" }}>
+                <div>
+                  <EyeOutlined style={{ fontSize: "20px", color: "#e8e8e8" }} />
+                </div>
+                최근 본 상품이 없습니다.
+              </div>
+            ) : (
+              <div>있어용!</div>
+            )}
+          </RecentView>
         </PostDiv>
-        <PlaceDiv onClick={PlaceClick}>
-          <C>
-            <AimOutlined style={{paddingRight: "10px"}}/>
-            {!place ?
-              <span>동네 설정</span> : <span>재설정</span>}
-          </C>
-          {place ?
-            <div>
-              <SearchLocation/></div>:
-            <LocalDiv>
-              {location}
-            </LocalDiv>
-          }
-        </PlaceDiv>
       </div>
     </div>
-  )
+  );
 }
 
 export default Layout;

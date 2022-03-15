@@ -1,5 +1,5 @@
-import styled from 'styled-components';
-import {Input} from "antd";
+import styled from "styled-components";
+import { Input } from "antd";
 
 export const SidebarImg = styled.img`
   width: 40px;
@@ -9,7 +9,7 @@ export const SidebarImg = styled.img`
 export const SidebarUl = styled.ul`
   list-style-type: none;
   line-height: 1;
-  color:black;
+  color: black;
 `;
 
 export const SidebarLi = styled.li`
@@ -19,7 +19,7 @@ export const SidebarLi = styled.li`
   :hover {
     transform: scale(1.3, 1.3);
   }
-  color:black;
+  color: black;
 `;
 
 export const SidebarDiv = styled.div`
@@ -64,8 +64,8 @@ export const Navbar = styled.div`
 
 export const RightSidebar = styled.div`
   position: fixed;
-  top:1%;
-  left:40%;
+  top: 1%;
+  left: 40%;
   padding: 0px 0;
   overflow: hidden;
   color: black;

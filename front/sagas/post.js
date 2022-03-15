@@ -1,5 +1,5 @@
-import {all, call, fork, put, takeLatest} from 'redux-saga/effects';
-import axios from 'axios';
+import { all, call, fork, put, takeLatest } from "redux-saga/effects";
+import axios from "axios";
 import {
   ADD_COMMENT_FAILURE,
   ADD_COMMENT_REQUEST,
@@ -9,7 +9,10 @@ import {
   ADD_POST_SUCCESS,
   LIKE_POST_FAILURE,
   LIKE_POST_REQUEST,
-  LIKE_POST_SUCCESS, LOAD_CHANGE_TAG_FAILURE, LOAD_CHANGE_TAG_REQUEST, LOAD_CHANGE_TAG_SUCCESS,
+  LIKE_POST_SUCCESS,
+  LOAD_CHANGE_TAG_FAILURE,
+  LOAD_CHANGE_TAG_REQUEST,
+  LOAD_CHANGE_TAG_SUCCESS,
   LOAD_HASHTAG_POSTS_FAILURE,
   LOAD_HASHTAG_POSTS_REQUEST,
   LOAD_HASHTAG_POSTS_SUCCESS,
@@ -24,7 +27,13 @@ import {
   LOAD_RELATED_POST_SUCCESS,
   LOAD_RENTAL_POST_FAILURE,
   LOAD_RENTAL_POST_REQUEST,
-  LOAD_RENTAL_POST_SUCCESS, LOAD_SEARCH_POSTS_FAILURE, LOAD_SEARCH_POSTS_REQUEST, LOAD_SEARCH_POSTS_SUCCESS,
+  LOAD_RENTAL_POST_SUCCESS,
+  LOAD_SCHANGE_TAG_FAILURE,
+  LOAD_SCHANGE_TAG_REQUEST,
+  LOAD_SCHANGE_TAG_SUCCESS,
+  LOAD_SEARCH_POSTS_FAILURE,
+  LOAD_SEARCH_POSTS_REQUEST,
+  LOAD_SEARCH_POSTS_SUCCESS,
   LOAD_SPOST_FAILURE,
   LOAD_SPOST_REQUEST,
   LOAD_SPOST_SUCCESS,
@@ -39,24 +48,28 @@ import {
   MODIFY_POST_SUCCESS,
   REMOVE_POST_FAILURE,
   REMOVE_POST_REQUEST,
-  REMOVE_POST_SUCCESS, SEND_DUMMYPOST_FAILURE, SEND_DUMMYPOST_REQUEST, SEND_DUMMYPOST_SUCCESS,
+  REMOVE_POST_SUCCESS,
+  SEND_DUMMYPOST_FAILURE,
+  SEND_DUMMYPOST_REQUEST,
+  SEND_DUMMYPOST_SUCCESS,
   UNLIKE_POST_FAILURE,
   UNLIKE_POST_REQUEST,
   UNLIKE_POST_SUCCESS,
   UPLOAD_IMAGES_FAILURE,
   UPLOAD_IMAGES_REQUEST,
   UPLOAD_IMAGES_SUCCESS,
-} from '../reducers/post';
-import {ADD_POST_TO_ME, REMOVE_POST_OF_ME} from '../reducers/user';
+} from "../reducers/post";
+import { ADD_POST_TO_ME, REMOVE_POST_OF_ME } from "../reducers/user";
 
 function addPostAPI(data) {
-  return axios.post('/post', data); // formdata 전송
+  return axios.post("/post", data); // formdata 전송
 }
 
 function* addPost(action) {
   try {
     const result = yield call(addPostAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: ADD_POST_SUCCESS,
       data: result.data,
     });
@@ -73,13 +86,14 @@ function* addPost(action) {
 }
 
 function sendDummyPostAPI(data) {
-  return axios.post('/post/write', data); // formdata 전송
+  return axios.post("/post/write", data); // formdata 전송
 }
 
 function* sendDummyPost(action) {
   try {
     const result = yield call(sendDummyPostAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: SEND_DUMMYPOST_SUCCESS,
       data: result.data,
     });
@@ -102,7 +116,8 @@ function removePostAPI(data) {
 function* removePost(action) {
   try {
     const result = yield call(removePostAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: REMOVE_POST_SUCCESS,
       data: result.data,
     });
@@ -118,15 +133,26 @@ function* removePost(action) {
   }
 }
 
-function loadPostAPI(data, lastId , boardNum, location) {
+function loadPostAPI(data, lastId, boardNum, location) {
   console.log(data);
-  return axios.get(`/posts/${encodeURIComponent(data)}/post?lastId=${lastId || 0}&boardNum=${boardNum || 0}&location=${encodeURIComponent(location)}`); // api 서버 요청은 /user/:userId/posts
+  return axios.get(
+    `/posts/${encodeURIComponent(data)}/post?lastId=${lastId || 0}&boardNum=${
+      boardNum || 0
+    }&location=${encodeURIComponent(location)}`
+  ); // api 서버 요청은 /user/:userId/posts
 }
 
 function* loadPost(action) {
   try {
-    const result = yield call(loadPostAPI, action.data, action.lastId , action.boardNum, action.location);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    const result = yield call(
+      loadPostAPI,
+      action.data,
+      action.lastId,
+      action.boardNum,
+      action.location
+    );
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_POST_SUCCESS,
       data: result.data,
     });
@@ -139,15 +165,25 @@ function* loadPost(action) {
   }
 }
 
-function changeTagAPI(data , boardNum) {
+function changeTagAPI(data, boardNum, location) {
   console.log(data);
-  return axios.get(`/posts/${encodeURIComponent(data)}/tag?boardNum=${boardNum || 0}`); // api 서버 요청은 /user/:userId/posts
+  return axios.get(
+    `/posts/${encodeURIComponent(data)}/tag?boardNum=${
+      boardNum || 0
+    }&location=${encodeURIComponent(location)}`
+  ); // api 서버 요청은 /user/:userId/posts
 }
 
 function* changeTag(action) {
   try {
-    const result = yield call(changeTagAPI, action.data , action.boardNum);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    const result = yield call(
+      changeTagAPI,
+      action.data,
+      action.boardNum,
+      action.location
+    );
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_CHANGE_TAG_SUCCESS,
       data: result.data,
     });
@@ -160,15 +196,27 @@ function* changeTag(action) {
   }
 }
 
-function loadSearchPostAPI(select, searchword , location ,boardNum , lastId) {
-  return axios.get(`/posts/search?select=${encodeURIComponent(select)}&location=${encodeURIComponent(location)}
-  &searchword=${encodeURIComponent(searchword)}&boardNum=${boardNum}&lastId=${lastId||0}`);
-}// api 서버 요청은 GET/posts/search/
+function loadSearchPostAPI(select, searchword, location, boardNum, lastId) {
+  return axios.get(`/posts/search?select=${encodeURIComponent(
+    select
+  )}&location=${encodeURIComponent(location)}
+  &searchword=${encodeURIComponent(searchword)}&boardNum=${boardNum}&lastId=${
+    lastId || 0
+  }`);
+} // api 서버 요청은 GET/posts/search/
 
 function* loadSearchPost(action) {
   try {
-    const result = yield call(loadSearchPostAPI, action.select, action.searchword , action.location ,action.boardNum, action.lastId);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    const result = yield call(
+      loadSearchPostAPI,
+      action.select,
+      action.searchword,
+      action.location,
+      action.boardNum,
+      action.lastId
+    );
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_SEARCH_POSTS_SUCCESS,
       data: result.data,
     });
@@ -181,15 +229,58 @@ function* loadSearchPost(action) {
   }
 }
 
-function rentalPostAPI(data, lastId) { // 대상유저 id
+function loadChangeSearchPostAPI(
+  select,
+  searchword,
+  location,
+  boardNum,
+  lastId,
+  tag
+) {
+  return axios.get(`/posts/searchTag?select=${encodeURIComponent(
+    select
+  )}&location=${encodeURIComponent(location)}
+  &searchword=${encodeURIComponent(searchword)}&boardNum=${boardNum}&lastId=${
+    lastId || 0
+  }&tag=${encodeURIComponent(tag)}`);
+} // api 서버 요청은 GET/posts/search/
+
+function* loadChangeSearchPost(action) {
+  try {
+    const result = yield call(
+      loadChangeSearchPostAPI,
+      action.select,
+      action.searchword,
+      action.location,
+      action.boardNum,
+      action.lastId,
+      action.tag
+    );
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
+      type: LOAD_SCHANGE_TAG_SUCCESS,
+      data: result.data,
+    });
+  } catch (err) {
+    console.error(err);
+    yield put({
+      type: LOAD_SCHANGE_TAG_FAILURE,
+      error: err.response.data,
+    });
+  }
+}
+
+function rentalPostAPI(data, lastId) {
+  // 대상유저 id
   console.log(data);
-  return axios.get(`/posts/${(data)}/post?lastId=${lastId || 0}`); // api 서버 요청은 /user/:userId/posts
+  return axios.get(`/posts/${data}/post?lastId=${lastId || 0}`); // api 서버 요청은 /user/:userId/posts
 }
 
 function* rentalPost(action) {
   try {
-    const result = yield call(rentalPostAPI, action.data, action.lastId );
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    const result = yield call(rentalPostAPI, action.data, action.lastId);
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_RENTAL_POST_SUCCESS,
       data: result.data,
     });
@@ -202,15 +293,17 @@ function* rentalPost(action) {
   }
 }
 
-function writePostAPI(data, lastId) { // 대상유저 id
+function writePostAPI(data, lastId) {
+  // 대상유저 id
   console.log(data);
-  return axios.get(`/posts/${(data)}/post?lastId=${lastId || 0}`); // api 서버 요청은 /user/:userId/posts
+  return axios.get(`/posts/${data}/post?lastId=${lastId || 0}`); // api 서버 요청은 /user/:userId/posts
 }
 
 function* writePost(action) {
   try {
-    const result = yield call(writePostAPI, action.data, action.lastId );
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    const result = yield call(writePostAPI, action.data, action.lastId);
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_WRITE_POST_SUCCESS,
       data: result.data,
     });
@@ -223,14 +316,17 @@ function* writePost(action) {
   }
 }
 
-function loadSPostAPI(postId,postBoardNum) {
-  return axios.get(`/post/singlepost?postId=${postId}&postBoardNum=${postBoardNum}`);
+function loadSPostAPI(postId, postBoardNum) {
+  return axios.get(
+    `/post/singlepost?postId=${postId}&postBoardNum=${postBoardNum}`
+  );
 }
 
 function* loadSPost(action) {
   try {
-    const result = yield call(loadSPostAPI, action.postId,action.postBoardNum);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    const result = yield call(loadSPostAPI, action.postId, action.postBoardNum);
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LOAD_SPOST_SUCCESS,
       data: result.data,
     });
@@ -249,7 +345,8 @@ function likePostAPI(data) {
 function* likePost(action) {
   try {
     const result = yield call(likePostAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LIKE_POST_SUCCESS,
       data: result.data, // PostId,UserId
     });
@@ -268,7 +365,8 @@ function unlikePostAPI(data) {
 function* unlikePost(action) {
   try {
     const result = yield call(unlikePostAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: UNLIKE_POST_SUCCESS,
       data: result.data, // PostId,UserId
     });
@@ -287,14 +385,14 @@ function addCommentAPI(data) {
 function* addComment(action) {
   try {
     const result = yield call(addCommentAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: ADD_COMMENT_SUCCESS,
       data: result.data,
     });
   } catch (err) {
     console.error(err);
     yield put({
-
       type: ADD_COMMENT_FAILURE,
       error: err.response.data,
     });
@@ -302,13 +400,14 @@ function* addComment(action) {
 }
 
 function uploadImagesAPI(data) {
-  return axios.post('/post/images', data); // formdata는 { name: data } 같은 식으로 감싸버리면 json으로 자동 변환되버린다.
+  return axios.post("/post/images", data); // formdata는 { name: data } 같은 식으로 감싸버리면 json으로 자동 변환되버린다.
 }
 
 function* uploadImages(action) {
   try {
     const result = yield call(uploadImagesAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: UPLOAD_IMAGES_SUCCESS,
       data: result.data,
     });
@@ -328,7 +427,8 @@ function loadUserPostsAPI(data, lastId) {
 function* loadUserPosts(action) {
   try {
     const result = yield call(loadUserPostsAPI, action.data, action.lastId);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_USER_POSTS_SUCCESS,
       data: result.data,
     });
@@ -348,7 +448,8 @@ function RelatedPostAPI(lastId) {
 function* RelatedPost(action) {
   try {
     const result = yield call(RelatedPostAPI, action.data, action.lastId);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_RELATED_POST_SUCCESS,
       data: result.data,
     });
@@ -362,13 +463,16 @@ function* RelatedPost(action) {
 }
 
 function loadHashtagPostsAPI(data, lastId) {
-  return axios.get(`/hashtag/${encodeURIComponent(data)}?lastId=${lastId || 0}`);
+  return axios.get(
+    `/hashtag/${encodeURIComponent(data)}?lastId=${lastId || 0}`
+  );
 }
 
 function* loadHashtagPosts(action) {
   try {
     const result = yield call(loadHashtagPostsAPI, action.data, action.lastId);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_HASHTAG_POSTS_SUCCESS,
       data: result.data,
     });
@@ -388,7 +492,8 @@ function loadLikedPostsAPI(data, lastId) {
 function* loadLikedPosts(action) {
   try {
     const result = yield call(loadLikedPostsAPI, action.data, action.lastId);
-    yield put({ // put이 액션을 dispatch하는 역할과 비슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 비슷하게 본다
       type: LOAD_LIKED_POSTS_SUCCESS,
       data: result.data,
     });
@@ -402,13 +507,14 @@ function* loadLikedPosts(action) {
 }
 
 function modifyPostAPI(data) {
-  return axios.patch(`/post/${data.PostId}`, data);
+  return axios.patch("/post/edit", data);
 }
 
 function* modifyPost(action) {
   try {
     const result = yield call(modifyPostAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: MODIFY_POST_SUCCESS,
       data: result.data, // PostId,UserId
     });
@@ -433,7 +539,7 @@ function* watchAddComment() {
 }
 
 function* watchLoadPost() {
-  yield takeLatest( LOAD_POST_REQUEST, loadPost);
+  yield takeLatest(LOAD_POST_REQUEST, loadPost);
 }
 
 function* watchLikePost() {
@@ -492,6 +598,10 @@ function* watchLoadChangeTag() {
   yield takeLatest(LOAD_CHANGE_TAG_REQUEST, changeTag);
 }
 
+function* watchloadChangeSearchPost() {
+  yield takeLatest(LOAD_SCHANGE_TAG_REQUEST, loadChangeSearchPost);
+}
+
 export default function* postSaga() {
   yield all([
     fork(watchAddPost),
@@ -512,5 +622,6 @@ export default function* postSaga() {
     fork(watchLoadSearchPost),
     fork(watchSendDummyPost),
     fork(watchLoadChangeTag),
+    fork(watchloadChangeSearchPost),
   ]);
 }

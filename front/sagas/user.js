@@ -1,5 +1,5 @@
-import {all, call, fork, put, takeLatest, throttle} from 'redux-saga/effects';
-import axios from 'axios';
+import { all, call, fork, put, takeLatest, throttle } from "redux-saga/effects";
+import axios from "axios";
 import {
   CHANGE_NICKNAME_FAILURE,
   CHANGE_NICKNAME_REQUEST,
@@ -22,34 +22,35 @@ import {
   SIGN_UP_FAILURE,
   SIGN_UP_REQUEST,
   SIGN_UP_SUCCESS,
-} from '../reducers/user';
+} from "../reducers/user";
 
 function loadMyInfoAPI() {
-  return axios.get('/user');
+  return axios.get("/user");
 }
 function SignUpAPI(data) {
-  return axios.post('/user', data);
+  return axios.post("/user", data);
 }
 function loadUserAPI(data) {
   return axios.get(`/user/${data}`);
 }
 function loadUsersAPI() {
-  return axios.get('/user/all');
+  return axios.get("/user/all");
 }
 function ChangeNickNameAPI(data) {
-  return axios.patch('/user/nickname', {nickname: data});
+  return axios.patch("/user/nickname", { nickname: data });
 }
 function logInAPI(data) {
-  return axios.post('/user/login', data);
+  return axios.post("/user/login", data);
 }
 function logOutAPI(data) {
-  return axios.post('/user/logout', data);
+  return axios.post("/user/logout", data);
 }
 
 function* loadMyInfo(action) {
   try {
     const result = yield call(loadMyInfoAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LOAD_MY_INFO_SUCCESS,
       data: result.data,
     });
@@ -63,7 +64,8 @@ function* loadMyInfo(action) {
 function* loadUser(action) {
   try {
     const result = yield call(loadUserAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LOAD_USER_SUCCESS,
       data: result.data,
     });
@@ -77,7 +79,8 @@ function* loadUser(action) {
 function* loadUsers(action) {
   try {
     const result = yield call(loadUsersAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LOAD_USERS_SUCCESS,
       data: result.data,
     });
@@ -91,7 +94,8 @@ function* loadUsers(action) {
 function* logIn(action) {
   try {
     const result = yield call(logInAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LOG_IN_SUCCESS,
       data: result.data,
     });
@@ -105,7 +109,8 @@ function* logIn(action) {
 function* logOut(action) {
   try {
     yield call(logOutAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: LOG_OUT_SUCCESS,
     });
   } catch (err) {
@@ -118,7 +123,8 @@ function* logOut(action) {
 function* signUp(action) {
   try {
     yield call(SignUpAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: SIGN_UP_SUCCESS,
     });
   } catch (err) {
@@ -131,7 +137,8 @@ function* signUp(action) {
 function* changeNickName(action) {
   try {
     const result = yield call(ChangeNickNameAPI, action.data);
-    yield put({ // put이 액션을 dispatch하는 역할과 빗슷하게 본다
+    yield put({
+      // put이 액션을 dispatch하는 역할과 빗슷하게 본다
       type: CHANGE_NICKNAME_SUCCESS,
       data: result.data,
     });

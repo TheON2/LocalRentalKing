@@ -1,48 +1,59 @@
-import Link from 'next/link';
-import PropTypes from 'prop-types';
-import {Button, Col, Menu, Row} from 'antd';
-import 'antd/dist/antd.css';
-import {useDispatch, useSelector} from 'react-redux';
-import useInput from '../../hooks/useInput';
-import React, {useCallback} from 'react';
-import Router from 'next/router';
+import Link from "next/link";
+import PropTypes from "prop-types";
+import { Button, Col, Menu, Row } from "antd";
+import "antd/dist/antd.css";
+import { useDispatch, useSelector } from "react-redux";
+import useInput from "../../hooks/useInput";
+import React, { useCallback } from "react";
+import Router from "next/router";
 
-import {LeftSidebar, Navbar, RightSidebar, SearchInput, SidebarDiv, SidebarLi, SidebarUl, WriteButton} from './styles';
+import {
+  LeftSidebar,
+  Navbar,
+  RightSidebar,
+  SearchInput,
+  SidebarDiv,
+  SidebarLi,
+  SidebarUl,
+  WriteButton,
+} from "./styles";
 
-import {logoutRequestAction} from '../../reducers/user';
+import { logoutRequestAction } from "../../reducers/user";
 
 function AppLayout({ children }) {
-  const [searchInput, onChangeSearchInput] = useInput('');
+  const [searchInput, onChangeSearchInput] = useInput("");
 
   const dispatch = useDispatch();
 
   const writeButtonStyle = {
-    left:"70%",
-    top:"2%",
-    zIndex:20,
+    left: "70%",
+    top: "2%",
+    zIndex: 20,
   };
 
   const onSearch = useCallback(() => {
-    Router.push(`/hashtag/${searchInput}`,undefined,{ shallow:true });
+    Router.push(`/hashtag/${searchInput}`, undefined, { shallow: true });
   }, [searchInput]);
 
   const onWrite = useCallback(() => {
-    Router.push('/write',undefined,{ shallow:true });
+    Router.push("/write", undefined, { shallow: true });
   }, []);
 
   const onLogOut = useCallback(() => {
     dispatch(logoutRequestAction());
-    Router.push('/',undefined,{ shallow:true });
+    Router.push("/", undefined, { shallow: true });
   }, []);
 
   return (
     <div>
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: "relative" }}>
         <Navbar>
           <Menu mode="horizontal">
             <Menu.Item key={1}>
               <Link href="/">
-                <a><h2>홈</h2></a>
+                <a>
+                  <h2>홈</h2>
+                </a>
               </Link>
             </Menu.Item>
           </Menu>
@@ -56,7 +67,7 @@ function AppLayout({ children }) {
                     <a> 우리동네 렌탈대장</a>
                   </SidebarLi>
                 </Link>
-                <Link href="/objectrecieve">
+                <Link href="/objectreceive">
                   <SidebarLi>
                     <a> 물건을 빌려줘</a>
                   </SidebarLi>
@@ -66,7 +77,7 @@ function AppLayout({ children }) {
                     <a> 물건을 빌려줄게</a>
                   </SidebarLi>
                 </Link>
-                <Link href="/talentrecieve">
+                <Link href="/talentreceive">
                   <SidebarLi>
                     <a> 힘을 빌려줘</a>
                   </SidebarLi>
@@ -114,7 +125,9 @@ function AppLayout({ children }) {
               onSearch={onSearch}
             />
           </RightSidebar>
-            <Button style={writeButtonStyle} onClick={onWrite}>글쓰기</Button>
+          <Button style={writeButtonStyle} onClick={onWrite}>
+            글쓰기
+          </Button>
         </div>
       </div>
       <div style={{ marginTop: 100, zIndex: 5 }}>
