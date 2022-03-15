@@ -485,11 +485,11 @@ router.patch("/edit", upload.none(), async (req, res, next) => {
               TogetherPostImage.create({ src: image })
             )
           );
-          await togetherPost.addTogetherPosTImages(images);
+          await TogetherPost.addTogetherPosTImages(images);
         } else {
           //이미지 하나
           const image = await TogetherPostImage.create({ src: req.body.image });
-          await togetherPost.addPTogetherPostImages(image);
+          await TogetherPost.addPTogetherPostImages(image);
         }
       }
       res.status(200).json("게시글 수정 완료");
